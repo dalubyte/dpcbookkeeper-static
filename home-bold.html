@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DPC Bookkeeper &middot; Built for Direct Primary Care</title>
+<link rel="stylesheet" href="styles.css?v=4" />
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+<style>
+  /* ===== BOLD DARK-MODE OVERRIDE ===== */
+  body.safe {
+    --safe-bg: #0D0D0E; --safe-bg-alt: #15151A;
+    --safe-paper: #1B1B22; --safe-stone: #222229;
+    --safe-ink: #F3EEDF; --safe-ink-2: #D9D3C3;
+    --safe-ink-3: #9A9486; --safe-ink-4: #5A554C;
+    --safe-rule: rgba(243,238,223,0.12);
+    --safe-brass: #E4B775;
+    background: var(--safe-bg); color: var(--safe-ink);
+  }
+  body.safe .nav { background: rgba(13,13,14,0.88); border-bottom: 1px solid var(--safe-rule); backdrop-filter: blur(12px); }
+  body.safe .nav-links a { color: var(--safe-ink-2); }
+  body.safe .nav-links a:hover { color: var(--safe-ink); }
+  body.safe .btn-primary { background: var(--safe-brass); color: #111114; border: none; }
+  body.safe .btn-primary:hover { background: #F0C789; color: #111114; }
+  body.safe .btn-secondary { background: transparent; color: var(--safe-ink); border: 1px solid var(--safe-rule); }
+  body.safe .btn-secondary:hover { border-color: var(--safe-brass); color: var(--safe-brass); }
+  body.safe .btn-ghost { color: var(--safe-brass); }
+  body.safe .bg-alt { background: var(--safe-bg-alt); }
+  body.safe .bg-paper { background: var(--safe-paper); }
+  body.safe .fg-muted { color: var(--safe-ink-2); }
+  body.safe .fg-faint { color: var(--safe-ink-3); }
+  body.safe .fg-brass { color: var(--safe-brass); }
+  body.safe .italic-accent { color: var(--safe-brass); }
+  body.safe .footer { background: #08080A; border-top: 1px solid var(--safe-rule); }
+  body.safe .scroll-progress { background: var(--safe-brass); }
+  body.safe .pulse-dot { background: var(--safe-brass); }
+  body.safe .pulse-dot::after { border-color: var(--safe-brass); }
+  body.safe .hero-grid-bg { opacity: 0.12; }
+  body.safe input, body.safe select, body.safe textarea { background: var(--safe-paper); color: var(--safe-ink); border-color: var(--safe-rule); }
+  body.safe .display { color: var(--safe-ink); }
+  body.safe img[src*="logo-full-blue-transparent"] { filter: brightness(0) invert(1) sepia(0.3) hue-rotate(-8deg) saturate(2); }
+  body.safe .ecg-line path { stroke: var(--safe-brass) !important; }
+  body.safe svg circle[fill="#1D4DA0"] { fill: var(--safe-brass); }
+  body.safe svg path[stroke="#1D4DA0"] { stroke: var(--safe-brass); }
+  body.safe svg text[fill="#9C7A3C"] { fill: var(--safe-brass); }
+  body.safe .bg-ink { background: #000 !important; }
+  body.safe .card { background: var(--safe-paper); border-color: var(--safe-rule); }
+</style>
+<meta property="og:title" content="DPC Bookkeeper — Built for Direct Primary Care" />
+<meta property="og:description" content="The only boutique bookkeeping firm that serves 100% DPC practices. One flat fee, zero insurance jargon." />
+<meta property="og:image" content="assets/og-image.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  .ecg-line path { stroke-dasharray: 1200; stroke-dashoffset: 1200; animation: drawEcg 3.2s .3s var(--ease) forwards; }
+  @keyframes drawEcg { to { stroke-dashoffset: 0; } }
+  .float-slow { animation: floatSlow 8s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .shimmer { position: relative; overflow: hidden; }
+  .shimmer::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(120deg, transparent 30%, rgba(156,122,60,0.18) 50%, transparent 70%);
+    transform: translateX(-100%); animation: shimmer 3.6s 1s var(--ease) infinite;
+  }
+  @keyframes shimmer { 50%,100% { transform: translateX(100%); } }
+  .rotate-slow { animation: rotateSlow 80s linear infinite; }
+  @keyframes rotateSlow { to { transform: rotate(360deg); } }
+  .rule-grow { height: 1px; background: var(--safe-rule); transform-origin: left; animation: ruleGrow 1.4s .2s var(--ease) both; }
+  @keyframes ruleGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .card-lift { transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
+  .card-lift:hover { transform: translateY(-4px); box-shadow: 0 24px 48px rgba(20,24,31,.08); }
+  .tilt { transition: transform .5s var(--ease); }
+  .tilt:hover { transform: rotate(-3deg) scale(1.02); }
+  .hero-grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--safe-rule) 1px, transparent 1px),
+      linear-gradient(90deg, var(--safe-rule) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 70% 60% at 70% 30%, #000 0%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 70% 30%, #000 0%, transparent 70%);
+    opacity: .35;
+    pointer-events: none;
+  }
+  .pulse-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: #1D4DA0; position: relative;
+  }
+  .pulse-dot::after {
+    content: ""; position: absolute; inset: -6px; border-radius: 50%;
+    border: 1px solid #1D4DA0; animation: pulse 2.2s ease-out infinite;
+  }
+  @keyframes pulse { 0% { transform: scale(.5); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+</style>
+</head>
+<body class="safe">
+
+<div class="scroll-progress"></div>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/logo-full-blue-transparent.png" alt="DPC Bookkeeper" style="width: 44px; height: 44px;" />
+      <span style="font-size: 19px;">DPC Bookkeeper</span>
+    </a>
+    <div class="nav-links">
+      <a href="services.html">Services</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="about.html">About</a>
+      <a href="blog.html">Field Notes</a>
+      <a href="contact.html">Contact</a>
+      <a href="index.html" style="color: var(--safe-brass); font-style: italic;">Light&nbsp;&rarr;</a>
+    </div>
+    <a href="contact.html" class="btn btn-primary">
+      Book a call
+      <span class="arrow">&rarr;</span>
+    </a>
+  </div>
+</nav>
+
+<section style="padding: 72px 0 96px; position: relative; overflow: hidden;">
+  <div class="hero-grid-bg"></div>
+  <div class="container" style="position: relative;">
+    <div class="eyebrow fg-muted fade-up" style="margin-bottom: 48px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <span class="pulse-dot"></span>
+      <span>EST. 2019</span>
+      <span class="divider-dot"></span>
+      <span>AUSTIN, TX</span>
+      <span class="divider-dot"></span>
+      <span>SERVING DPCs NATIONWIDE</span>
+    </div>
+
+    <div class="fade-up d1" style="position: relative; max-width: 1180px;">
+      <svg viewBox="0 0 600 40" preserveAspectRatio="none" style="display: block; width: 360px; height: 28px; margin-bottom: 20px;" aria-hidden="true" class="ecg-line">
+        <path d="M0 20 L140 20 L160 8 L180 32 L200 4 L220 36 L240 20 L600 20"
+              fill="none" stroke="#1D4DA0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1 class="display">
+        Your CPA keeps asking why<br/>
+        you don&rsquo;t <span class="italic-accent" style="font-size: 0.95em; color: var(--safe-brass);">bill insurance.</span>
+      </h1>
+    </div>
+
+    <div class="fade-up d2" style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 64px; margin-top: 56px; align-items: start;">
+      <p style="font-size: 20px; line-height: 1.55; max-width: 560px;" class="fg-muted">
+        You shouldn&rsquo;t have to teach your bookkeeper what DPC is. Or wait a week for a reply. Or explain the membership model to a new account manager every quarter. You want a system that runs quietly &mdash; books closed on time, same name on the email, work just done. That&rsquo;s the whole product.
+      </p>
+      <div class="stack gap-20" style="padding-top: 8px;">
+        <div class="row gap-12" style="flex-wrap: wrap;">
+          <a href="#lead-magnet" class="btn btn-primary">
+            Get the DPC Finance Checklist
+            <span class="arrow">&rarr;</span>
+          </a>
+          <a href="contact.html" class="btn btn-secondary">Book a call</a>
+        </div>
+        <p class="eyebrow fg-faint">FREE &middot; 14 PAGES &middot; NO EMAIL TRICKS</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding: 96px 0 72px;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 80px; align-items: start; margin-bottom: 56px;">
+      <div>
+        <div class="eyebrow fg-brass" style="margin-bottom: 20px;">WHAT YOU&rsquo;RE LIVING WITH</div>
+        <h2 class="display">Sound<br/>familiar?</h2>
+      </div>
+      <div style="padding-top: 8px;">
+        <p class="fg-muted" style="font-size: 18px; max-width: 520px; line-height: 1.55;">
+          Every DPC owner we talk to lists the same four complaints. We wrote them down, then built the firm that answers each one.
+        </p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--safe-rule); border: 1px solid var(--safe-rule); border-radius: var(--radius-md); overflow: hidden;">
+      <div style="background: var(--safe-paper); padding: 40px 36px;">
+        <div class="mono fg-faint" style="font-size: 11px; margin-bottom: 16px;">01 / THE WAIT</div>
+        <h4 class="display" style="font-size: 22px;">&ldquo;They take a week to reply.&rdquo;</h4>
+        <p class="fg-muted" style="font-size: 15px; margin-top: 12px; line-height: 1.55;">
+          Your question was simple. Their silence was not. We reply in one business day. Usually the same day.
+        </p>
+      </div>
+      <div style="background: var(--safe-paper); padding: 40px 36px;">
+        <div class="mono fg-faint" style="font-size: 11px; margin-bottom: 16px;">02 / THE REVOLVING DOOR</div>
+        <h4 class="display" style="font-size: 22px;">&ldquo;I talk to someone new every quarter.&rdquo;</h4>
+        <p class="fg-muted" style="font-size: 15px; margin-top: 12px; line-height: 1.55;">
+          One person. One bookkeeper. One email thread. Your team knows your practice by name, not by ticket number.
+        </p>
+      </div>
+      <div style="background: var(--safe-paper); padding: 40px 36px;">
+        <div class="mono fg-faint" style="font-size: 11px; margin-bottom: 16px;">03 / THE REDO</div>
+        <h4 class="display" style="font-size: 22px;">&ldquo;Half of it was just done wrong.&rdquo;</h4>
+        <p class="fg-muted" style="font-size: 15px; margin-top: 12px; line-height: 1.55;">
+          Memberships booked as services. Owner draws miscoded as payroll. We&rsquo;ve seen the whole catalog. We don&rsquo;t repeat it.
+        </p>
+      </div>
+      <div style="background: var(--safe-paper); padding: 40px 36px;">
+        <div class="mono fg-faint" style="font-size: 11px; margin-bottom: 16px;">04 / THE TEACHING</div>
+        <h4 class="display" style="font-size: 22px;">&ldquo;I&rsquo;m tired of explaining DPC.&rdquo;</h4>
+        <p class="fg-muted" style="margin-top: 12px; font-size: 15px; line-height: 1.55;">
+          You shouldn&rsquo;t have to define a membership model to the people booking it. That&rsquo;s why we only work with DPCs.
+        </p>
+      </div>
+    </div>
+
+    <div style="margin-top: 48px; padding: 28px 32px; border: 1px solid var(--safe-rule); border-radius: var(--radius-md); background: var(--safe-paper); display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+      <div class="pulse-dot" style="background: var(--safe-brass);"></div>
+      <p style="font-size: 17px; flex: 1; min-width: 280px;">
+        <span class="italic-accent" style="color: var(--safe-brass);">The whole pitch:</span> a system that just runs.
+      </p>
+      <a href="services.html" class="btn btn-ghost" style="padding: 8px 0;">How it works<span class="arrow">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<section style="padding: 36px 0; border-top: 1px solid var(--safe-rule); border-bottom: 1px solid var(--safe-rule); overflow: hidden; background: var(--safe-bg-alt);">
+  <div class="marquee">
+    <div class="marquee-track" style="gap: 48px; align-items: center;">
+      <span class="display" style="font-size: 40px; color: var(--safe-ink); letter-spacing: -0.04em;">Built for DPCs</span>
+      <img src="assets/logo-full-blue-transparent.png" alt="" style="height: 52px; width: auto;" />
+      <span class="italic-accent" style="font-size: 42px; color: var(--safe-brass);">one flat fee</span>
+      <img src="assets/logo-full-blue-transparent.png" alt="" style="height: 52px; width: auto;" />
+      <span class="display" style="font-size: 40px; color: var(--safe-ink); letter-spacing: -0.04em;">Physicians &middot; NPs &middot; PAs</span>
+      <img src="assets/logo-full-blue-transparent.png" alt="" style="height: 52px; width: auto;" />
+      <span class="italic-accent" style="font-size: 42px; color: var(--safe-brass);">no CPT codes here</span>
+      <img src="assets/logo-full-blue-transparent.png" alt="" style="height: 52px; width: auto;" />
+      <span class="display" style="font-size: 40px; color: var(--safe-ink); letter-spacing: -0.04em;">Built for DPCs</span>
+      <img src="assets/logo-full-blue-transparent.png" alt="" style="height: 52px; width: auto;" />
+      <span class="italic-accent" style="font-size: 42px; color: var(--safe-brass);">one flat fee</span>
+      <img src="assets/logo-full-blue-transparent.png" alt="" style="height: 52px; width: auto;" />
+      <span class="display" style="font-size: 40px; color: var(--safe-ink); letter-spacing: -0.04em;">Physicians &middot; NPs &middot; PAs</span>
+      <img src="assets/logo-full-blue-transparent.png" alt="" style="height: 52px; width: auto;" />
+      <span class="italic-accent" style="font-size: 42px; color: var(--safe-brass);">no CPT codes here</span>
+      <img src="assets/logo-full-blue-transparent.png" alt="" style="height: 52px; width: auto;" />
+    </div>
+  </div>
+</section>
+
+<section style="padding: 120px 0;">
+  <div class="container">
+    <div class="bg-paper shimmer" style="border-radius: var(--radius-lg); padding: 72px 64px; border: 1px solid var(--safe-rule); position: relative; overflow: hidden;">
+      <div style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 64px; align-items: center;">
+        <div>
+          <div class="eyebrow fg-brass" style="margin-bottom: 24px;">THE DPC DIFFERENCE</div>
+          <h2 class="display">Same billing model<br/>as your practice.</h2>
+          <p class="fg-muted" style="font-size: 17px; margin-top: 24px; max-width: 480px;">
+            One flat monthly fee. No hourly surprises. No per-form upcharges. No &ldquo;quick question&rdquo; that becomes an invoice. You priced your care for clarity. We priced ours the same way.
+          </p>
+          <div class="row gap-48" style="margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--safe-rule); flex-wrap: wrap;">
+            <div><div class="display" style="font-size: 56px;">$0</div><div class="eyebrow fg-muted" style="margin-top: 10px;">HIDDEN FEES</div></div>
+            <div><div class="display" style="font-size: 56px;">1</div><div class="eyebrow fg-muted" style="margin-top: 10px;">FLAT MONTHLY RATE</div></div>
+            <div><div class="display" style="font-size: 56px;">&infin;</div><div class="eyebrow fg-muted" style="margin-top: 10px;">&ldquo;QUICK QUESTIONS&rdquo;</div></div>
+          </div>
+        </div>
+        <div style="position: relative; aspect-ratio: 1; max-width: 360px; margin: 0 auto; width: 100%;">
+          <!-- Decorative rotating ring behind branded square -->
+          <svg viewBox="0 0 360 360" class="rotate-slow" style="position: absolute; inset: -24px; width: calc(100% + 48px); height: calc(100% + 48px);" aria-hidden="true">
+            <defs><path id="circlePath" d="M180,180 m-168,0 a168,168 0 1,1 336,0 a168,168 0 1,1 -336,0" fill="none"/></defs>
+            <text font-family="Poppins, sans-serif" font-size="11" font-weight="500" letter-spacing="4" fill="#9C7A3C">
+              <textPath href="#circlePath" startOffset="0">DPC BOOKKEEPER &middot; BUILT FOR DIRECT PRIMARY CARE &middot; AUSTIN TX &middot; EST. 2019 &middot;</textPath>
+            </text>
+          </svg>
+          <!-- Branded square logo (white-on-blue) -->
+          <div class="float-slow" style="position: relative; width: 100%; aspect-ratio: 1; border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 30px 60px rgba(29,77,160,0.18);">
+            <img src="assets/logo-white-on-blue.svg" alt="DPC Bookkeeper &mdash; Built for Direct Primary Care" style="width: 100%; height: 100%; display: block;" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding: 56px 0; border-top: 1px solid var(--safe-rule); border-bottom: 1px solid var(--safe-rule);">
+  <div class="container">
+    <div class="eyebrow fg-muted" style="text-align: center; margin-bottom: 40px;">FEATURED IN</div>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M16 2 L16 30 M2 16 L30 16 M6 6 L26 26 M26 6 L6 26" stroke="#9C7A3C" stroke-width="1" opacity="0.5"/>
+          <circle cx="16" cy="16" r="6" fill="#1D4DA0"/>
+        </svg>
+        <div>
+          <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.18em;">AS SEEN ON</div>
+          <div class="display" style="font-size: 26px; letter-spacing: -0.02em;">DPC Launchpad</div>
+        </div>
+      </div>
+      <div style="width: 1px; height: 48px; background: var(--safe-rule);"></div>
+      <div class="fg-muted" style="font-size: 15px; max-width: 360px;">
+        More coverage in progress. If you run a DPC podcast or newsletter, we&rsquo;d love to come talk shop.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 80px; margin-bottom: 80px; align-items: end;">
+      <div>
+        <div class="eyebrow fg-brass" style="margin-bottom: 20px;">WHAT WE DO</div>
+        <h2 class="display">The whole<br/>back office,<br/>handled.</h2>
+      </div>
+      <div style="padding-bottom: 8px;">
+        <p class="fg-muted" style="font-size: 18px; max-width: 540px; line-height: 1.55;">
+          Most firms treat DPC as a footnote. A &ldquo;cash-based practice&rdquo; and nothing more. We built the whole firm around you &mdash; the chart of accounts, the KPIs, the tax strategy, the people who answer the phone.
+        </p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--safe-rule);">
+      <div class="card-lift" style="padding: 40px 32px 40px 0; border-right: 1px solid var(--safe-rule); border-bottom: 1px solid var(--safe-rule);">
+        <div class="mono fg-brass" style="font-size: 12px; margin-bottom: 20px;">01 / MONTHLY</div>
+        <h3 class="display">Bookkeeping</h3>
+        <p class="fg-muted" style="margin-top: 16px; font-size: 15px;">A chart of accounts built for membership revenue. Reconciled by the 10th. Dashboards your brain can actually hold.</p>
+      </div>
+      <div class="card-lift" style="padding: 40px 32px; border-right: 1px solid var(--safe-rule); border-bottom: 1px solid var(--safe-rule);">
+        <div class="mono fg-brass" style="font-size: 12px; margin-bottom: 20px;">02 / ANNUAL</div>
+        <h3 class="display">Tax returns</h3>
+        <p class="fg-muted" style="margin-top: 16px; font-size: 15px;">Federal, state, local. Prepared and signed by a licensed CPA on our team. Filed on time, every time.</p>
+      </div>
+      <div class="card-lift" style="padding: 40px 0 40px 32px; border-bottom: 1px solid var(--safe-rule);">
+        <div class="mono fg-brass" style="font-size: 12px; margin-bottom: 20px;">03 / ADVISORY</div>
+        <h3 class="display">Tax strategy</h3>
+        <p class="fg-muted" style="margin-top: 16px; font-size: 15px;">S&#8209;corp elections, entity structure, retirement vehicles. The moves that save five figures, planned in March, not April.</p>
+      </div>
+      <div class="card-lift" style="padding: 40px 32px 40px 0; border-right: 1px solid var(--safe-rule); border-bottom: 1px solid var(--safe-rule);">
+        <div class="mono fg-brass" style="font-size: 12px; margin-bottom: 20px;">04 / OPERATIONS</div>
+        <h3 class="display">Payroll</h3>
+        <p class="fg-muted" style="margin-top: 16px; font-size: 15px;">W&#8209;2s, 1099s, reasonable comp for S&#8209;corp owners. Set up clean. Run quietly in the background.</p>
+      </div>
+      <div class="card-lift" style="padding: 40px 32px; border-right: 1px solid var(--safe-rule); border-bottom: 1px solid var(--safe-rule);">
+        <div class="mono fg-brass" style="font-size: 12px; margin-bottom: 20px;">05 / RESCUE</div>
+        <h3 class="display">Clean&#8209;ups</h3>
+        <p class="fg-muted" style="margin-top: 16px; font-size: 15px;">Inherited a mess from the last CPA? We&rsquo;ve unwound three years of commingled accounts more times than we&rsquo;d like to admit.</p>
+      </div>
+      <div class="card-lift" style="padding: 40px 0 40px 32px; border-bottom: 1px solid var(--safe-rule);">
+        <div class="mono fg-brass" style="font-size: 12px; margin-bottom: 20px;">06 / COMPLIANCE</div>
+        <h3 class="display">1099 filing</h3>
+        <p class="fg-muted" style="margin-top: 16px; font-size: 15px;">Contractors, specialists, your locum. Tracked all year. Filed in January without the scramble.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 56px;">
+      <a href="services.html" class="btn btn-ghost" style="padding-left: 0;">See the full scope of work<span class="arrow">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-alt" style="position: relative; overflow: hidden;">
+  <div class="container" style="position: relative;">
+    <div class="italic-accent" aria-hidden="true" style="position: absolute; top: -40px; right: 4%; font-size: 400px; line-height: 1; color: var(--safe-brass); opacity: 0.08; pointer-events: none;">&ldquo;</div>
+    <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 80px; align-items: center; position: relative;">
+      <div>
+        <div class="tilt" style="aspect-ratio: 4/5; background: var(--safe-ink-4); border-radius: var(--radius-md); position: relative; overflow: hidden;">
+          <div style="position: absolute; inset: 0; background: linear-gradient(135deg, #8A93A1 0%, #5B6472 100%);"></div>
+          <svg viewBox="0 0 200 250" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.3;">
+            <path d="M100 90 L100 110 M90 100 L110 100" stroke="#EBE4D6" stroke-width="1.5"/>
+            <circle cx="100" cy="100" r="22" fill="none" stroke="#EBE4D6" stroke-width="0.8"/>
+          </svg>
+          <div class="mono" style="position: absolute; bottom: 20px; left: 20px; color: var(--safe-paper); opacity: 0.7; font-size: 11px;">[ DANIEL, FOUNDER ]</div>
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow fg-brass" style="margin-bottom: 28px;">FROM THE FOUNDER</div>
+        <p class="display" style="font-size: clamp(28px, 3.2vw, 44px); line-height: 1.15; letter-spacing: -0.025em;">
+          &ldquo;I found DPC the same way most of your patients did &mdash; looking for better care for my own family. The values made sense. So I pointed my whole firm at it.&rdquo;
+        </p>
+        <div class="rule-grow" style="margin: 40px 0 24px;"></div>
+        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+          <div>
+            <div class="display" style="font-size: 18px;">Daniel</div>
+            <div class="fg-muted" style="font-size: 14px;">Founder</div>
+          </div>
+          <div style="flex: 1; min-width: 40px;"></div>
+          <a href="about.html" class="btn btn-ghost" style="padding: 8px 0;">Read his story<span class="arrow">&rarr;</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div style="margin-bottom: 72px;">
+      <div class="eyebrow fg-brass" style="margin-bottom: 20px;">FROM THE DISCOVERY CALLS</div>
+      <h2 class="display" style="max-width: 840px;">What DPC owners tell us, in their own words.</h2>
+      <p class="fg-muted" style="font-size: 16px; margin-top: 16px; max-width: 540px;">We&rsquo;re still young enough that we&rsquo;re letting our clients finish a full year before we put their names on the internet. These are recurring quotes we&rsquo;ve heard, almost verbatim, on the first call.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+      <div class="card card-lift" style="padding: 36px 32px; position: relative;">
+        <div class="italic-accent" style="font-size: 72px; line-height: 0.4; color: var(--safe-brass); margin-bottom: 28px;">&ldquo;</div>
+        <p style="font-size: 17px; line-height: 1.5;">My last CPA kept asking why we don&rsquo;t bill insurance. The new one knew what a membership waterfall was before I had to explain it.</p>
+        <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--safe-rule);">
+          <div class="mono fg-faint" style="font-size: 11px; letter-spacing: 0.16em;">WHAT WE HEAR FROM DPC OWNERS</div>
+        </div>
+      </div>
+      <div class="card card-lift" style="padding: 36px 32px;">
+        <div class="italic-accent" style="font-size: 72px; line-height: 0.4; color: var(--safe-brass); margin-bottom: 28px;">&ldquo;</div>
+        <p style="font-size: 17px; line-height: 1.5;">I want to open a second location but the numbers have to make sense first. I don&rsquo;t want a bookkeeper. I want a partner who sees it with me.</p>
+        <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--safe-rule);">
+          <div class="mono fg-faint" style="font-size: 11px; letter-spacing: 0.16em;">WHAT WE HEAR FROM DPC OWNERS</div>
+        </div>
+      </div>
+      <div class="card card-lift" style="padding: 36px 32px;">
+        <div class="italic-accent" style="font-size: 72px; line-height: 0.4; color: var(--safe-brass); margin-bottom: 28px;">&ldquo;</div>
+        <p style="font-size: 17px; line-height: 1.5;">Honestly, I want my Thursday afternoons back. I don&rsquo;t want to open QuickBooks again. Ever.</p>
+        <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--safe-rule);">
+          <div class="mono fg-faint" style="font-size: 11px; letter-spacing: 0.16em;">WHAT WE HEAR FROM DPC OWNERS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUANTIFIED RESULT BAND ============ -->
+<section style="padding: 96px 0; background: var(--safe-bg-alt); border-top: 1px solid var(--safe-rule); border-bottom: 1px solid var(--safe-rule);">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 64px; align-items: end; margin-bottom: 56px;">
+      <div>
+        <div class="eyebrow fg-brass" style="margin-bottom: 20px;">BY THE NUMBERS</div>
+        <h2 class="display">Small firm.<br/>Narrow focus.</h2>
+      </div>
+      <p class="fg-muted" style="font-size: 17px; max-width: 520px; line-height: 1.55; padding-bottom: 8px;">
+        We&rsquo;re the boutique option, on purpose. One market. Deep. These are the numbers we measure ourselves on.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 1px solid var(--safe-rule);">
+      <div style="padding: 40px 24px 12px 0; border-right: 1px solid var(--safe-rule);">
+        <div class="display" style="font-size: 72px; letter-spacing: -0.04em; line-height: 1;">100<span style="font-size: 44px; vertical-align: super;">%</span></div>
+        <div class="mono fg-brass" style="margin-top: 20px; font-size: 11px;">CLIENTS THAT ARE DPC</div>
+        <p class="fg-muted" style="font-size: 14px; margin-top: 10px; line-height: 1.5;">Not most. All. We don&rsquo;t take general small business work.</p>
+      </div>
+      <div style="padding: 40px 24px 12px 32px; border-right: 1px solid var(--safe-rule);">
+        <div class="display" style="font-size: 72px; letter-spacing: -0.04em; line-height: 1;">&lt; 24<span style="font-size: 30px; vertical-align: super;">hr</span></div>
+        <div class="mono fg-brass" style="margin-top: 20px; font-size: 11px;">AVG. EMAIL REPLY</div>
+        <p class="fg-muted" style="font-size: 14px; margin-top: 10px; line-height: 1.5;">Usually same day. Never a week. That&rsquo;s the promise.</p>
+      </div>
+      <div style="padding: 40px 24px 12px 32px; border-right: 1px solid var(--safe-rule);">
+        <div class="display" style="font-size: 72px; letter-spacing: -0.04em; line-height: 1;">1</div>
+        <div class="mono fg-brass" style="margin-top: 20px; font-size: 11px;">ONE POINT OF CONTACT</div>
+        <p class="fg-muted" style="font-size: 14px; margin-top: 10px; line-height: 1.5;">Same name, same email, quarter after quarter.</p>
+      </div>
+      <div style="padding: 40px 0 12px 32px;">
+        <div class="display" style="font-size: 72px; letter-spacing: -0.04em; line-height: 1;">$0</div>
+        <div class="mono fg-brass" style="margin-top: 20px; font-size: 11px;">HOURLY UPCHARGES</div>
+        <p class="fg-muted" style="font-size: 14px; margin-top: 10px; line-height: 1.5;">Flat monthly fee. &ldquo;Quick questions&rdquo; included.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMPARISON ============ -->
+<section class="section">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 80px; margin-bottom: 64px; align-items: end;">
+      <div>
+        <div class="eyebrow fg-brass" style="margin-bottom: 20px;">THE SHORT VERSION</div>
+        <h2 class="display">A firm with<br/>a DPC page, vs.<br/>a DPC firm.</h2>
+      </div>
+      <p class="fg-muted" style="font-size: 17px; max-width: 520px; line-height: 1.55; padding-bottom: 8px;">
+        Plenty of good generalist firms serve DPC practices alongside dental offices, restaurants, and cleaning companies. We&rsquo;re not one of them. Here&rsquo;s the difference in practice.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--safe-rule); border-radius: var(--radius-md); overflow: hidden;">
+      <!-- Generalist -->
+      <div style="padding: 44px 40px; border-right: 1px solid var(--safe-rule); background: var(--safe-paper);">
+        <div class="mono fg-faint" style="font-size: 11px; margin-bottom: 24px; letter-spacing: 0.18em;">A GENERALIST FIRM WITH A DPC PAGE</div>
+        <div class="stack gap-20">
+          <div style="display: flex; gap: 16px; align-items: start;">
+            <span class="mono fg-faint" style="font-size: 13px; min-width: 20px;">&times;</span>
+            <div>
+              <div class="display" style="font-size: 17px;">An advisor team of three</div>
+              <div class="fg-muted" style="font-size: 14px; margin-top: 4px;">CFO, advisor, associate. Handoffs between them. You explain it three times.</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: start;">
+            <span class="mono fg-faint" style="font-size: 13px; min-width: 20px;">&times;</span>
+            <div>
+              <div class="display" style="font-size: 17px;">DPC as one vertical of many</div>
+              <div class="fg-muted" style="font-size: 14px; margin-top: 4px;">Right next to dental, trades, restaurants. Shared templates. Shared attention.</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: start;">
+            <span class="mono fg-faint" style="font-size: 13px; min-width: 20px;">&times;</span>
+            <div>
+              <div class="display" style="font-size: 17px;">Discovery-sold engagements</div>
+              <div class="fg-muted" style="font-size: 14px; margin-top: 4px;">&ldquo;We uncovered $X in savings.&rdquo; Great pitch. Tough thing to reproduce monthly.</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: start;">
+            <span class="mono fg-faint" style="font-size: 13px; min-width: 20px;">&times;</span>
+            <div>
+              <div class="display" style="font-size: 17px;">Hourly or tiered fees</div>
+              <div class="fg-muted" style="font-size: 14px; margin-top: 4px;">Quick questions become invoices. The clock is always running somewhere.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- DPC Bookkeeper -->
+      <div style="padding: 44px 40px; background: var(--safe-ink); color: var(--safe-paper); position: relative;">
+        <div aria-hidden="true" style="position: absolute; inset: 0; background-image: repeating-linear-gradient(0deg, transparent 0, transparent 31px, rgba(251,248,242,0.03) 31px, rgba(251,248,242,0.03) 32px); pointer-events: none;"></div>
+        <div class="mono" style="font-size: 11px; margin-bottom: 24px; letter-spacing: 0.18em; color: var(--safe-brass); position: relative;">DPC BOOKKEEPER</div>
+        <div class="stack gap-20" style="position: relative;">
+          <div style="display: flex; gap: 16px; align-items: start;">
+            <span class="mono" style="font-size: 13px; min-width: 20px; color: var(--safe-brass);">&check;</span>
+            <div>
+              <div class="display" style="font-size: 17px;">One person. Your person.</div>
+              <div style="font-size: 14px; margin-top: 4px; opacity: 0.75;">Same name, same email, every quarter. No ticket queue.</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: start;">
+            <span class="mono" style="font-size: 13px; min-width: 20px; color: var(--safe-brass);">&check;</span>
+            <div>
+              <div class="display" style="font-size: 17px;">Only DPCs. No other verticals.</div>
+              <div style="font-size: 14px; margin-top: 4px; opacity: 0.75;">The chart of accounts was built once, for one model, and refined by repetition.</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: start;">
+            <span class="mono" style="font-size: 13px; min-width: 20px; color: var(--safe-brass);">&check;</span>
+            <div>
+              <div class="display" style="font-size: 17px;">A quiet system that runs</div>
+              <div style="font-size: 14px; margin-top: 4px; opacity: 0.75;">Books close on the 10th. You find out because there was nothing to ask about.</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: start;">
+            <span class="mono" style="font-size: 13px; min-width: 20px; color: var(--safe-brass);">&check;</span>
+            <div>
+              <div class="display" style="font-size: 17px;">One flat monthly fee</div>
+              <div style="font-size: 14px; margin-top: 4px; opacity: 0.75;">Same model as your practice. Predictable in, predictable out.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MEET YOUR TEAM ============ -->
+<section class="section bg-alt" style="padding: 120px 0;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 80px; align-items: start;">
+      <div>
+        <div class="eyebrow fg-brass" style="margin-bottom: 20px;">MEET YOUR TEAM</div>
+        <h2 class="display">Your person<br/>is <span class="italic-accent">a person.</span><br/>Not a queue.</h2>
+        <p class="fg-muted" style="font-size: 16px; margin-top: 24px; line-height: 1.55; max-width: 420px;">
+          No CFO/advisor/associate handoffs. The name on your onboarding email is the name on your tax-strategy call, your reconciliation questions, and your year-end review.
+        </p>
+      </div>
+      <div>
+        <div style="display: grid; grid-template-columns: 220px 1fr; gap: 40px; align-items: start; padding: 36px; background: var(--safe-paper); border: 1px solid var(--safe-rule); border-radius: var(--radius-md);">
+          <div>
+            <div class="tilt" style="aspect-ratio: 4/5; background: linear-gradient(135deg, #8A93A1 0%, #5B6472 100%); border-radius: var(--radius-sm); position: relative; overflow: hidden;">
+              <svg viewBox="0 0 200 250" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.3;">
+                <path d="M100 90 L100 110 M90 100 L110 100" stroke="#EBE4D6" stroke-width="1.5"/>
+                <circle cx="100" cy="100" r="22" fill="none" stroke="#EBE4D6" stroke-width="0.8"/>
+              </svg>
+              <div class="mono" style="position: absolute; bottom: 16px; left: 16px; color: var(--safe-paper); opacity: 0.7; font-size: 10px;">[ HEADSHOT TBD ]</div>
+            </div>
+          </div>
+          <div>
+            <div class="mono fg-brass" style="font-size: 11px; margin-bottom: 12px;">FOUNDER</div>
+            <h3 class="display" style="font-size: 40px; letter-spacing: -0.03em;">Daniel</h3>
+            <div class="rule-grow" style="margin: 20px 0;"></div>
+            <p class="fg-muted" style="font-size: 15px; line-height: 1.55;">
+              Came to DPC as a patient first. Left generalist bookkeeping to build a firm that only serves this movement. Runs every new client through onboarding personally. Works alongside a licensed CPA who handles every tax return.
+            </p>
+            <div style="margin-top: 24px; display: flex; gap: 20px; flex-wrap: wrap;">
+              <div>
+                <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.16em;">BASED IN</div>
+                <div style="font-size: 14px; margin-top: 4px;">Austin, TX</div>
+              </div>
+              <div>
+                <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.16em;">EST.</div>
+                <div style="font-size: 14px; margin-top: 4px;">2019</div>
+              </div>
+              <div>
+                <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.16em;">SERVES</div>
+                <div style="font-size: 14px; margin-top: 4px;">DPCs only</div>
+              </div>
+            </div>
+            <div style="margin-top: 28px;">
+              <a href="about.html" class="btn btn-ghost" style="padding: 0;">Read Daniel&rsquo;s story<span class="arrow">&rarr;</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NOT A FIT ============ -->
+<section class="section" style="padding: 120px 0;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 80px; align-items: start; margin-bottom: 64px;">
+      <div>
+        <div class="eyebrow fg-brass" style="margin-bottom: 20px;">READ THIS FIRST</div>
+        <h2 class="display">We turn<br/>away <span class="italic-accent">more clients</span><br/>than we take.</h2>
+      </div>
+      <p class="fg-muted" style="font-size: 17px; max-width: 540px; line-height: 1.6; padding-top: 20px;">
+        Not a scarcity pitch. We&rsquo;re genuinely a bad fit for a lot of practices, and we&rsquo;d rather tell you now than three months in. If any of these sound like you, we&rsquo;ll refer you to a firm that&rsquo;s better for you than we are.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px;">
+      <div style="padding: 36px 32px; border: 1px solid var(--safe-rule); border-radius: var(--radius-md); background: var(--safe-paper);">
+        <div class="mono fg-faint" style="font-size: 11px; letter-spacing: 0.14em; margin-bottom: 20px;">NOT A FIT &middot; 01</div>
+        <h3 class="display" style="font-size: 22px; line-height: 1.25;">You&rsquo;re hybrid &mdash; DPC plus some insurance billing.</h3>
+        <p class="fg-muted" style="font-size: 15px; margin-top: 14px; line-height: 1.55;">
+          We only take 100% DPC practices. The accounting workflows are genuinely different. We&rsquo;ll point you to a good generalist medical CPA.
+        </p>
+      </div>
+      <div style="padding: 36px 32px; border: 1px solid var(--safe-rule); border-radius: var(--radius-md); background: var(--safe-paper);">
+        <div class="mono fg-faint" style="font-size: 11px; letter-spacing: 0.14em; margin-bottom: 20px;">NOT A FIT &middot; 02</div>
+        <h3 class="display" style="font-size: 22px; line-height: 1.25;">You want a full Fractional CFO relationship.</h3>
+        <p class="fg-muted" style="font-size: 15px; margin-top: 14px; line-height: 1.55;">
+          We do operator advisory, but not weekly strategy sessions or board prep. If you&rsquo;re building a five-location DPC, you want a CFO firm. We&rsquo;ll introduce you.
+        </p>
+      </div>
+      <div style="padding: 36px 32px; border: 1px solid var(--safe-rule); border-radius: var(--radius-md); background: var(--safe-paper);">
+        <div class="mono fg-faint" style="font-size: 11px; letter-spacing: 0.14em; margin-bottom: 20px;">NOT A FIT &middot; 03</div>
+        <h3 class="display" style="font-size: 22px; line-height: 1.25;">Your partner handles the books and likes it.</h3>
+        <p class="fg-muted" style="font-size: 15px; margin-top: 14px; line-height: 1.55;">
+          If accounting is your spouse&rsquo;s thing and it works, great. We&rsquo;re expensive for a reason &mdash; we&rsquo;re replacing a job, not supplementing one.
+        </p>
+      </div>
+      <div style="padding: 36px 32px; border: 1px solid var(--safe-rule); border-radius: var(--radius-md); background: var(--safe-paper);">
+        <div class="mono fg-faint" style="font-size: 11px; letter-spacing: 0.14em; margin-bottom: 20px;">NOT A FIT &middot; 04</div>
+        <h3 class="display" style="font-size: 22px; line-height: 1.25;">You need aggressive tax-shelter strategies.</h3>
+        <p class="fg-muted" style="font-size: 15px; margin-top: 14px; line-height: 1.55;">
+          We&rsquo;re conservative on purpose. If your prior CPA was pitching conservation easements or captive insurance, we&rsquo;re the wrong firm.
+        </p>
+      </div>
+    </div>
+
+    <div style="margin-top: 48px; padding: 28px 32px; border: 1px dashed var(--safe-rule); border-radius: var(--radius-md); display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+      <div class="mono fg-brass" style="font-size: 11px; letter-spacing: 0.16em;">IF NONE OF THESE APPLY&hellip;</div>
+      <p style="font-size: 16px; flex: 1; min-width: 280px;">Then we&rsquo;re probably a fit. Thirty minutes to find out.</p>
+      <a href="contact.html" class="btn btn-primary">Book a call<span class="arrow">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CASE STUDY WALL ============ -->
+<section class="section bg-alt" style="padding: 120px 0;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 80px; align-items: end; margin-bottom: 64px;">
+      <div>
+        <div class="eyebrow fg-brass" style="margin-bottom: 20px;">QUIET WORK</div>
+        <h2 class="display">What&rsquo;s on<br/>our book,<br/>today.</h2>
+      </div>
+      <p class="fg-muted" style="font-size: 17px; max-width: 520px; line-height: 1.55; padding-bottom: 8px;">
+        A composite snapshot of the practices we serve. Names are redacted until each client gives explicit permission &mdash; most are still in year two. The numbers are real.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--safe-rule); border-radius: var(--radius-md); overflow: hidden;">
+
+      <!-- Case 1 -->
+      <div style="background: var(--safe-paper); padding: 40px 36px; border-right: 1px solid var(--safe-rule); position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 32px;">
+          <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.16em;">CASE STUDY 01<br/><span style="color: var(--safe-brass);">&mdash; YEAR 3</span></div>
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--safe-stone); display: flex; align-items: center; justify-content: center; font-family: var(--safe-mono); font-size: 11px; color: var(--safe-ink-3); letter-spacing: 0.12em;">TX</div>
+        </div>
+        <h3 class="display" style="font-size: 20px; line-height: 1.3;">Solo family DPC, Hill Country, TX</h3>
+        <p class="fg-muted" style="font-size: 14px; margin-top: 12px; line-height: 1.55;">
+          Inherited a three-year chart-of-accounts mess. We rebuilt, S-Corp-elected mid-year, set up a Solo 401(k).
+        </p>
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--safe-rule); display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <div class="display" style="font-size: 32px; letter-spacing: -0.03em; color: var(--safe-brass);">$11.4K</div>
+            <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.14em; margin-top: 6px;">YR-1 TAX DELTA</div>
+          </div>
+          <div>
+            <div class="display" style="font-size: 32px; letter-spacing: -0.03em;">312</div>
+            <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.14em; margin-top: 6px;">ACTIVE MEMBERS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Case 2 -->
+      <div style="background: var(--safe-paper); padding: 40px 36px; border-right: 1px solid var(--safe-rule); position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 32px;">
+          <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.16em;">CASE STUDY 02<br/><span style="color: var(--safe-brass);">&mdash; PRE-LAUNCH</span></div>
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--safe-stone); display: flex; align-items: center; justify-content: center; font-family: var(--safe-mono); font-size: 11px; color: var(--safe-ink-3); letter-spacing: 0.12em;">NC</div>
+        </div>
+        <h3 class="display" style="font-size: 20px; line-height: 1.3;">Two-clinician launch, Western NC</h3>
+        <p class="fg-muted" style="font-size: 14px; margin-top: 12px; line-height: 1.55;">
+          Engaged six months before doors opened. Entity structure, partnership agreement, merchant processor, QuickBooks. Day one was clean.
+        </p>
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--safe-rule); display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <div class="display" style="font-size: 32px; letter-spacing: -0.03em; color: var(--safe-brass);">0 days</div>
+            <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.14em; margin-top: 6px;">CLEANUP AT LAUNCH</div>
+          </div>
+          <div>
+            <div class="display" style="font-size: 32px; letter-spacing: -0.03em;">148</div>
+            <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.14em; margin-top: 6px;">90-DAY MEMBERS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Case 3 -->
+      <div style="background: var(--safe-paper); padding: 40px 36px; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 32px;">
+          <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.16em;">CASE STUDY 03<br/><span style="color: var(--safe-brass);">&mdash; YEAR 6</span></div>
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--safe-stone); display: flex; align-items: center; justify-content: center; font-family: var(--safe-mono); font-size: 11px; color: var(--safe-ink-3); letter-spacing: 0.12em;">CO</div>
+        </div>
+        <h3 class="display" style="font-size: 20px; line-height: 1.3;">Established practice, Front Range, CO</h3>
+        <p class="fg-muted" style="font-size: 14px; margin-top: 12px; line-height: 1.55;">
+          Moved from a big-4-alum CPA billing hourly. Same tax outcome, 40% cheaper, predictable invoice. Owner got Thursdays back.
+        </p>
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--safe-rule); display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <div class="display" style="font-size: 32px; letter-spacing: -0.03em; color: var(--safe-brass);">&minus;40%</div>
+            <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.14em; margin-top: 6px;">ANNUAL FEE</div>
+          </div>
+          <div>
+            <div class="display" style="font-size: 32px; letter-spacing: -0.03em;">6.2hr</div>
+            <div class="mono fg-faint" style="font-size: 10px; letter-spacing: 0.14em; margin-top: 6px;">/WK RECLAIMED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="mono fg-faint" style="font-size: 11px; letter-spacing: 0.14em; text-align: center; margin-top: 32px;">
+      &mdash;&mdash; COMPOSITE SNAPSHOTS &middot; NAMED STUDIES TO FOLLOW WITH CLIENT PERMISSION &mdash;&mdash;
+    </p>
+  </div>
+</section>
+
+<section id="lead-magnet" class="section bg-ink" style="padding: 140px 0; position: relative; overflow: hidden;">
+  <div aria-hidden="true" style="position: absolute; inset: 0; background-image: repeating-linear-gradient(0deg, transparent 0, transparent 31px, rgba(251,248,242,0.04) 31px, rgba(251,248,242,0.04) 32px); pointer-events: none;"></div>
+  <div class="container" style="position: relative;">
+    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 80px; align-items: center;">
+      <div>
+        <div class="eyebrow" style="color: var(--safe-brass); margin-bottom: 24px;">FREE DOWNLOAD</div>
+        <h2 class="display" style="color: var(--safe-paper);">The DPC Founder&rsquo;s<br/><span class="italic-accent">Finance Checklist</span>.</h2>
+        <p style="color: var(--safe-bg); opacity: 0.72; font-size: 17px; margin-top: 28px; max-width: 480px; line-height: 1.55;">
+          Fourteen pages. The exact questions we ask every new DPC client in their first 30 days. Entity structure, membership accounting, owner comp, retirement. No email wall. No sales sequence.
+        </p>
+        <form style="margin-top: 40px; display: flex; gap: 12px; max-width: 480px;" onsubmit="return false;">
+          <input type="email" class="input" placeholder="you@yourpractice.com" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18); color: var(--safe-paper); flex: 1;" />
+          <button type="button" class="btn" style="background: var(--safe-brass); color: var(--safe-paper);">Download<span class="arrow">&rarr;</span></button>
+        </form>
+        <p class="mono" style="font-size: 10px; margin-top: 20px; color: var(--safe-ink-4); letter-spacing: 0.14em;">WE DON&rsquo;T SELL YOUR EMAIL. WE BARELY EVEN SEND YOU ONE.</p>
+      </div>
+      <div style="display: flex; justify-content: center;">
+        <div class="float-slow" style="background: var(--safe-paper); border-radius: 4px; padding: 36px 32px; width: 100%; max-width: 340px; box-shadow: 0 40px 80px rgba(0,0,0,0.4); color: var(--safe-ink); transform: rotate(-2deg);">
+          <div class="eyebrow fg-brass" style="margin-bottom: 18px;">DPC BOOKKEEPER &middot; GUIDE 01</div>
+          <div class="display" style="font-size: 26px; line-height: 1.05; margin-bottom: 20px; letter-spacing: -0.03em;">The DPC Founder&rsquo;s Finance Checklist</div>
+          <hr style="border: none; border-top: 1px solid var(--safe-rule); margin: 0 0 20px;" />
+          <div class="stack" style="font-size: 12.5px; gap: 14px;">
+            <div style="display: flex; gap: 12px; align-items: start;"><span class="mono fg-brass">01</span><span>Your entity structure matches your revenue shape</span></div>
+            <div style="display: flex; gap: 12px; align-items: start;"><span class="mono fg-brass">02</span><span>You&rsquo;re tracking active vs churned members</span></div>
+            <div style="display: flex; gap: 12px; align-items: start;"><span class="mono fg-brass">03</span><span>Owner comp passes the reasonable&#8209;salary test</span></div>
+            <div style="display: flex; gap: 12px; align-items: start;"><span class="mono fg-brass">04</span><span>Labs &amp; procedures are not commingled</span></div>
+            <div style="display: flex; gap: 12px; align-items: start;"><span class="mono fg-brass">05</span><span>You have a retirement vehicle that fits a DPC</span></div>
+            <div style="display: flex; gap: 12px; align-items: start; opacity: 0.35;"><span class="mono">06</span><span>&hellip;and nine more</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 64px;">
+      <div>
+        <div class="nav-logo" style="margin-bottom: 24px;">
+          <img src="assets/logo-full-blue-transparent.png" alt="" style="width: 44px; height: 44px;" />
+          <span style="font-size: 19px;">DPC Bookkeeper</span>
+        </div>
+        <p class="fg-muted" style="max-width: 360px; font-size: 14px;">A bookkeeping firm that only works with Direct Primary Care. One flat fee. One focus.</p>
+      </div>
+      <div>
+        <div class="eyebrow fg-faint" style="margin-bottom: 20px;">FIRM</div>
+        <div class="stack gap-12" style="font-size: 14px;">
+          <a href="about.html">About</a>
+          <a href="services.html">Services</a>
+          <a href="pricing.html">Pricing</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow fg-faint" style="margin-bottom: 20px;">RESOURCES</div>
+        <div class="stack gap-12" style="font-size: 14px;">
+          <a href="blog.html">Field Notes</a>
+          <a href="#lead-magnet">DPC Finance Checklist</a>
+          <a href="#">Podcast appearances</a>
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow fg-faint" style="margin-bottom: 20px;">CONTACT</div>
+        <div class="stack gap-12" style="font-size: 14px;">
+          <a href="mailto:hello@dpcbookkeeper.com">hello@dpcbookkeeper.com</a>
+          <a href="tel:+15125551234">(512) 555-1234</a>
+          <span class="fg-muted">Austin, TX</span>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 32px; border-top: 1px solid var(--safe-rule); font-size: 12px; flex-wrap: wrap; gap: 16px;" class="fg-faint">
+      <div>&copy; 2026 DPC Bookkeeper, LLC. DPC Bookkeeper is a bookkeeping firm, not a CPA firm. Tax returns are prepared and signed by a licensed CPA on our team.</div>
+      <div class="row gap-24">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>
