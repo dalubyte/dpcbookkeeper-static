@@ -177,7 +177,7 @@ p  { margin: 0; }
   white-space: nowrap;
   flex-shrink: 0;
 }
-.nav-logo img { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
+.nav-logo img { width: 48px; height: 48px; object-fit: contain; flex-shrink: 0; }
 .nav-links {
   display: flex;
   align-items: center;
@@ -185,9 +185,10 @@ p  { margin: 0; }
   font-size: 14px;
   font-weight: 400;
 }
-.nav-links a { opacity: 0.7; transition: opacity .2s var(--ease); }
-.nav-links a:hover,
+.nav-links a { opacity: 0.78; transition: opacity .2s var(--ease), color .2s var(--ease); }
+.nav-links a:hover { opacity: 1; color: var(--safe-brass); }
 .nav-links a.active { opacity: 1; }
+.bold .nav-links a:hover { color: var(--bold-brass); }
 @media (max-width: 860px) {
   .nav-links { display: none; }
 }
@@ -226,6 +227,50 @@ p  { margin: 0; }
 .bold .btn-secondary:hover { border-color: var(--bold-brass); color: var(--bold-brass); }
 .bold .btn-ghost { color: var(--bold-fg); }
 .bold .btn-ghost:hover { background: var(--bold-bg-alt); }
+
+/* ---------- Headshot (founder portrait component) ---------- */
+.headshot {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--safe-ink);
+  box-shadow: inset 0 0 0 1px rgba(26, 25, 21, 0.08), 0 1px 2px rgba(26, 25, 21, 0.04);
+}
+.headshot.is-compact { border-radius: var(--radius-sm); }
+.headshot__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+  filter: sepia(14%) saturate(92%) contrast(104%) brightness(0.97);
+  transition: filter 0.4s var(--ease);
+  z-index: 2;
+}
+.headshot:hover .headshot__img {
+  filter: sepia(4%) saturate(100%) contrast(102%) brightness(1);
+}
+.headshot__fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(120% 90% at 30% 20%, rgba(198, 156, 90, 0.12) 0%, rgba(198, 156, 90, 0) 55%),
+    linear-gradient(160deg, #1F2733 0%, #121821 100%);
+  color: var(--safe-paper);
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(48px, 8vw, 96px);
+  letter-spacing: -0.04em;
+  z-index: 1;
+  user-select: none;
+}
+.headshot.is-compact .headshot__fallback { font-size: 72px; }
+.headshot__img[data-loaded="false"] { display: none; }
 
 /* ---------- Utility ---------- */
 .stack { display: flex; flex-direction: column; }
@@ -317,6 +362,137 @@ p  { margin: 0; }
   z-index: 100;
 }
 .bold .scroll-progress { background: var(--bold-brass); }
+
+/* ============================================================
+   RESPONSIVE
+   Inline grid/column styles throughout the HTML need to collapse
+   gracefully at tablet and mobile. Attribute selectors + !important
+   override the inline style= values from here.
+   ============================================================ */
+
+/* Tablet (≤ 980px) — mostly collapse 3+ col grids to 2 col, loosen gaps */
+@media (max-width: 980px) {
+  /* Two-column content splits (sidebar + body patterns) → stack */
+  .section [style*="grid-template-columns"][style*="1.1fr"],
+  .section [style*="grid-template-columns"][style*="1.2fr"],
+  .section [style*="grid-template-columns"][style*="1.3fr"],
+  .section [style*="grid-template-columns"][style*="1.4fr"],
+  .section [style*="grid-template-columns"][style*="1.6fr"],
+  .section [style*="grid-template-columns"][style*="2fr"],
+  .section [style*="grid-template-columns: 1fr 1.2fr"],
+  .section [style*="grid-template-columns: 220px"] {
+    grid-template-columns: 1fr !important;
+    gap: 48px !important;
+  }
+
+  /* 3-col card/case grids → 2 col */
+  .section [style*="repeat(3, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* 4-col metric grids → 2 col */
+  .section [style*="repeat(4, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Footer 4-col → 2 col */
+  .footer [style*="grid-template-columns: 2fr 1fr 1fr 1fr"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 40px !important;
+  }
+
+  /* Large display headings scale down */
+  .display {
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Mobile (≤ 720px) — collapse everything to single column */
+@media (max-width: 720px) {
+  /* Any inline grid with multiple columns → single column */
+  [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+
+  /* Footer links row → 2 col so labels don't get huge blank space */
+  .footer [style*="grid-template-columns: 2fr 1fr 1fr 1fr"] {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 32px 24px !important;
+  }
+
+  /* Borders that were column-dividers should become row-dividers */
+  .section [style*="border-right"][style*="border-bottom"] {
+    border-right: 0 !important;
+  }
+
+  /* Hero/display text must reflow, not shrink to illegibility.
+     Inline font-size: clamp(...) already handles this; enforce readable floor. */
+  .display { letter-spacing: -0.015em; }
+
+  /* Inline "display" font-sizes that were fixed (e.g. font-size: 72px) — scale */
+  [class*="display"][style*="font-size: 72px"],
+  [class*="display"][style*="font-size: 64px"] {
+    font-size: 48px !important;
+    line-height: 1.05 !important;
+  }
+  [class*="display"][style*="font-size: 48px"] {
+    font-size: 36px !important;
+  }
+  [class*="display"][style*="font-size: 40px"] {
+    font-size: 30px !important;
+  }
+
+  /* Large decorative quote glyphs shrink */
+  [style*="font-size: 400px"] { font-size: 200px !important; }
+
+  /* Section padding already handled above (72px 0). Big inline section
+     paddings (style="padding: 140px 0") need to yield too. */
+  section[style*="padding: 140px 0"],
+  section[style*="padding: 120px 0"] {
+    padding: 72px 0 !important;
+  }
+
+  /* Big inline card paddings */
+  [style*="padding: 72px 64px"] { padding: 48px 28px !important; }
+  [style*="padding: 48px"] { padding: 32px 24px !important; }
+  [style*="padding: 44px 40px"] { padding: 32px 24px !important; }
+  [style*="padding: 40px 36px"] { padding: 28px 22px !important; }
+
+  /* Nav icon — current 48px is fine, but make sure nav padding is comfortable */
+  .nav-inner { padding: 14px 0; gap: 16px; }
+  .nav-logo img { width: 40px; height: 40px; }
+  .nav-logo span { font-size: 16px !important; }
+
+  /* CTAs wrap */
+  .row[class*="gap"] { flex-wrap: wrap; }
+
+  /* Email subscribe / lead-magnet forms: input + button stack on narrow */
+  form[style*="display: flex"][style*="gap: 12px"] {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  form[style*="display: flex"][style*="gap: 12px"] .btn,
+  form[style*="display: flex"][style*="gap: 12px"] button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Marquee — slightly slower/smaller on mobile */
+  .marquee-track { animation-duration: 55s; gap: 40px; }
+
+  /* Headshot compact card: was 220px fixed column inside a card,
+     now stacks — cap its width so it doesn't go full-bleed */
+  .headshot.is-compact { max-width: 220px; margin: 0 auto; }
+}
+
+/* Very narrow phones (≤ 420px) — final safety net */
+@media (max-width: 420px) {
+  .nav-logo span { display: none; } /* drop wordmark on tiny phones to save space */
+  .display { letter-spacing: -0.01em; }
+  /* Buttons full-width when they'd otherwise crowd */
+  .row .btn { flex: 1 1 auto; }
+}
 
 /* ---------- Tiny fade-up (CSS-driven, no JS) ---------- */
 .fade-up {
