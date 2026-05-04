@@ -1,0 +1,1023 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resources | DPC Bookkeeper</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background-color: #faf8f5; color: #1a3a4a; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', sans-serif; font-weight: 700; }
+    .ekg-pattern {
+      background-image: url("data:image/svg+xml,%3Csvg width='200' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 50 L30 50 L35 35 L40 65 L45 50 L80 50 L85 40 L90 60 L95 50 L200 50' stroke='%231565C0' stroke-width='1' fill='none' opacity='0.18'/%3E%3C/svg%3E");
+      background-repeat: repeat-x;
+      background-position: 0 center;
+    }
+    .smooth-link { transition: all 0.3s ease; }
+    .smooth-link:hover { opacity: 0.8; }
+    .card-lift { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
+    .card-lift:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(21, 101, 192, 0.12); }
+    .fade-in { animation: fadeIn 0.5s ease both; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .chip { transition: all 0.2s ease; }
+    /* hide number input spinners */
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+    /* dialog */
+    .modal-backdrop { background: rgba(13, 43, 78, 0.55); backdrop-filter: blur(4px); }
+  </style>
+ </head>
+ <body class="h-full overflow-auto bg-[#faf8f5]">
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="env,react">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    const ACCENT = '#1565C0';
+    const ACCENT_DARK = '#0D47A1';
+    const NAVY = '#0D2B4E';
+    const INK = '#1a3a4a';
+    const MUTE = '#5a6b70';
+
+    /* ---------------------------------------------------------------- DATA */
+    const CATEGORIES = [
+      { id: 'all',         label: 'All',          icon: 'layout-grid' },
+      { id: 'guides',      label: 'Guides',       icon: 'book-open' },
+      { id: 'calculators', label: 'Calculators',  icon: 'calculator' },
+      { id: 'articles',    label: 'Articles',     icon: 'newspaper' },
+      { id: 'video',       label: 'Video',        icon: 'play-circle' },
+      { id: 'partners',    label: 'Partners',     icon: 'link-2' },
+      { id: 'ecosystem',   label: 'DPC Ecosystem',icon: 'globe' },
+      { id: 'faq',         label: 'FAQ',          icon: 'help-circle' }
+    ];
+
+    const LEAD_MAGNETS = [
+      {
+        id: 'lm-coa',
+        title: 'The DPC Chart of Accounts',
+        subtitle: 'A 14-page reference template',
+        blurb: 'The exact account structure we use for every DPC practice. Drop-in ready for QuickBooks Online.',
+        gated: true,
+        format: 'PDF',
+        pages: 14,
+        icon: 'file-spreadsheet'
+      },
+      {
+        id: 'lm-deductions',
+        title: 'DPC-Specific Deductions Checklist',
+        subtitle: '37 deductions most CPAs miss',
+        blurb: 'Print this, hand it to your accountant. Recover what generalists routinely overlook.',
+        gated: false,
+        format: 'PDF',
+        pages: 6,
+        icon: 'check-square'
+      },
+      {
+        id: 'lm-launch',
+        title: 'Pre-Launch Financial Checklist',
+        subtitle: 'For physicians opening their first DPC',
+        blurb: 'EIN, entity, banking, payroll, software stack — sequenced and dated.',
+        gated: true,
+        format: 'PDF',
+        pages: 9,
+        icon: 'rocket'
+      },
+      {
+        id: 'lm-revrec',
+        title: 'Membership Revenue Recognition Guide',
+        subtitle: 'Annual vs. monthly, refunds, prorations',
+        blurb: 'How to book membership income correctly so your P&L tells the truth.',
+        gated: false,
+        format: 'PDF',
+        pages: 8,
+        icon: 'repeat'
+      }
+    ];
+
+    const ARTICLES = [
+      { id: 'a1', title: 'Why generalist bookkeepers cost DPC practices money', readTime: '6 min read', date: 'Apr 2026', icon: 'trending-down' },
+      { id: 'a2', title: 'S-Corp vs. LLC for solo DPC physicians', readTime: '11 min read', date: 'Mar 2026', icon: 'scale' },
+      { id: 'a3', title: 'How to set reasonable physician compensation', readTime: '8 min read', date: 'Feb 2026', icon: 'dollar-sign' },
+      { id: 'a4', title: 'The four numbers every DPC owner should know', readTime: '5 min read', date: 'Jan 2026', icon: 'bar-chart-3' }
+    ];
+
+    const VIDEOS = [
+      { id: 'v1', title: 'Setting up QuickBooks for DPC in 12 minutes', length: '12:04', icon: 'play' },
+      { id: 'v2', title: 'Reading your monthly P&L (DPC version)', length: '9:31', icon: 'play' },
+      { id: 'v3', title: 'Tax season prep: a 30-minute walkthrough', length: '28:47', icon: 'play' }
+    ];
+
+    const PARTNERS = [
+      { name: 'Hint Health',     blurb: 'Membership management',     tag: 'Software' },
+      { name: 'Atlas MD',        blurb: 'EHR + membership platform', tag: 'Software' },
+      { name: 'Sigma MD',        blurb: 'EHR for DPC',               tag: 'Software' },
+      { name: 'Relay',           blurb: 'Business banking',          tag: 'Banking' },
+      { name: 'Mercury',         blurb: 'Business banking',          tag: 'Banking' },
+      { name: 'Gusto',           blurb: 'Payroll',                   tag: 'Payroll' },
+      { name: 'QuickBooks Online', blurb: 'Bookkeeping',             tag: 'Bookkeeping' },
+      { name: 'Stripe',          blurb: 'Payments',                  tag: 'Payments' }
+    ];
+
+    const ECOSYSTEM = [
+      { name: 'DPC Launchpad',                blurb: 'Mapping and resources for the DPC movement',                                  type: 'Resource' },
+      { name: 'Hint Summit',                 blurb: 'Annual gathering for DPC physicians and operators',                            type: 'Conference' },
+      { name: 'AAFP DPC Member Interest Group', blurb: 'American Academy of Family Physicians DPC community',                      type: 'Association' },
+      { name: 'My DPC Story Podcast',        blurb: 'Conversations with DPC physicians around the country',                         type: 'Podcast' },
+      { name: 'Direct Primary Care Coalition', blurb: 'Advocacy and policy work for DPC',                                          type: 'Association' }
+    ];
+
+    const FAQS = [
+      { q: 'Do you only work with DPC practices?',                a: 'Yes. We do not take generalist clients. Every workflow, template, and report we build is for DPC.' },
+      { q: 'What if I\u2019m not in Texas?',                          a: 'We work with practices in 10+ states. Everything is fully remote. We can handle multi-state payroll and filings.' },
+      { q: 'Do you do tax returns or only bookkeeping?',           a: 'We do both. Bookkeeping monthly, tax prep and strategy year-round, advisory on request.' },
+      { q: 'How fast can you onboard a new practice?',             a: 'Typically two to three weeks. We do a kickoff call, take inventory, clean up the prior year if needed, and have you on a monthly cadence by the next close.' },
+      { q: 'What does it cost?',                                   a: 'Pricing depends on practice size and scope. We give a flat monthly quote on the discovery call \u2014 no hourly billing, no surprises.' }
+    ];
+
+    /* --------------------------------------------------------- ICON HELPER */
+    function Icon({ name, className = '', strokeWidth }) {
+      const ref = useRef(null);
+      useEffect(() => { if (window.lucide) window.lucide.createIcons({ nameAttr: 'data-lucide-rendered' }); }, [name]);
+      useEffect(() => {
+        if (!ref.current) return;
+        ref.current.innerHTML = '';
+        const i = document.createElement('i');
+        i.setAttribute('data-lucide', name);
+        if (strokeWidth) i.setAttribute('stroke-width', strokeWidth);
+        i.className = className;
+        ref.current.appendChild(i);
+        if (window.lucide) window.lucide.createIcons();
+      }, [name, className, strokeWidth]);
+      return <span ref={ref} className="inline-flex" />;
+    }
+
+    /* ----------------------------------------------------- LAYOUT: NAVBAR */
+    function Nav() {
+      const [open, setOpen] = useState(false);
+      return (
+        <nav className="w-full bg-white shadow-sm sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="index.html" className="flex items-center gap-3">
+              <img src="https://i.imgur.com/ilor5RH.png" alt="DPC Bookkeeper Logo" className="w-12 h-12 rounded-lg shadow-md object-cover" loading="lazy"
+                   onError={(e) => { e.currentTarget.outerHTML = '<div class="w-12 h-12 rounded-lg shadow-md flex items-center justify-center text-white font-bold" style="background:#1565C0">DPC</div>'; }} />
+              <span className="text-xl font-bold" style={{ color: ACCENT }}>DPC Bookkeeper</span>
+            </a>
+            <div className="hidden md:flex gap-8 text-sm font-semibold" style={{ color: INK }}>
+              <a href="index.html" className="smooth-link hover:text-[#1565C0]">Home</a>
+              <a href="index.html#problem" className="smooth-link hover:text-[#1565C0]">The Problem</a>
+              <a href="index.html#services" className="smooth-link hover:text-[#1565C0]">Services</a>
+              <a href="pricing.html" className="smooth-link hover:text-[#1565C0]">Pricing</a>
+              <a href="resources.html" className="smooth-link" style={{ color: ACCENT }}>Resources</a>
+              <a href="https://calendly.com/dannyluna/bookachat" target="_blank" rel="noopener noreferrer" className="smooth-link hover:text-[#1565C0]">Book a Free Call</a>
+            </div>
+            <button className="md:hidden" style={{ color: ACCENT }} onClick={() => setOpen(o => !o)} aria-label="menu">
+              <Icon name={open ? 'x' : 'menu'} className="w-6 h-6" />
+            </button>
+          </div>
+          {open && (
+            <div className="md:hidden flex flex-col gap-3 px-6 pb-4 text-sm font-semibold" style={{ color: INK }}>
+              <a href="index.html">Home</a>
+              <a href="index.html#problem">The Problem</a>
+              <a href="index.html#services">Services</a>
+              <a href="pricing.html">Pricing</a>
+              <a href="resources.html" style={{ color: ACCENT }}>Resources</a>
+              <a href="https://calendly.com/dannyluna/bookachat" target="_blank" rel="noopener noreferrer">Book a Free Call</a>
+            </div>
+          )}
+        </nav>
+      );
+    }
+
+    /* ----------------------------------------------------- LAYOUT: HERO */
+    function Hero({ query, setQuery, accent }) {
+      return (
+        <section className="w-full bg-white border-b border-[#e9e3d6] ekg-pattern">
+          <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
+            <div className="text-xs font-bold uppercase tracking-[0.18em] mb-3" style={{ color: accent }}>Resources</div>
+            <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-5" style={{ color: INK, maxWidth: '20ch', textWrap: 'pretty' }}>
+              The DPC owner&rsquo;s reference shelf.
+            </h1>
+            <p className="text-lg leading-relaxed mb-8" style={{ color: MUTE, maxWidth: '60ch' }}>
+              Templates, calculators, and walkthroughs we&rsquo;ve built from working with 40+ practices.
+              Use what helps. Skip what doesn&rsquo;t. No login required.
+            </p>
+            <div className="relative max-w-xl">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: MUTE }}>
+                <Icon name="search" className="w-5 h-5" />
+              </span>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search guides, calculators, articles…"
+                className="w-full pl-12 pr-4 py-3 rounded-lg bg-[#faf8f5] border border-[#e9e3d6] focus:outline-none focus:ring-2 text-base"
+                style={{ color: INK, boxShadow: 'inset 0 1px 2px rgba(13,43,78,0.04)' }}
+              />
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    /* --------------------------------------------------- CATEGORY CHIPS */
+    function Chips({ active, setActive, accent }) {
+      return (
+        <div className="max-w-7xl mx-auto px-6 pt-10">
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.map(c => {
+              const on = active === c.id;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setActive(c.id)}
+                  className="chip flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border"
+                  style={{
+                    background: on ? accent : 'white',
+                    color: on ? 'white' : INK,
+                    borderColor: on ? accent : '#e9e3d6'
+                  }}
+                >
+                  <Icon name={c.icon} className="w-4 h-4" />
+                  <span>{c.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    /* ---------------------------------------------- SECTION WRAPPER */
+    function Section({ id, eyebrow, title, subtitle, children, accent }) {
+      return (
+        <section id={id} className="max-w-7xl mx-auto px-6 pt-16">
+          <div className="mb-8">
+            {eyebrow && <div className="text-xs font-bold uppercase tracking-[0.18em] mb-2" style={{ color: accent }}>{eyebrow}</div>}
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: INK, textWrap: 'pretty' }}>{title}</h2>
+            {subtitle && <p className="text-lg" style={{ color: MUTE, maxWidth: '60ch' }}>{subtitle}</p>}
+          </div>
+          {children}
+        </section>
+      );
+    }
+
+    /* ------------------------------------------------ LEAD MAGNETS */
+    function LeadMagnetCard({ item, gatingMode, onDownload, accent }) {
+      const showGate = gatingMode === 'all' || (gatingMode === 'mix' && item.gated);
+      return (
+        <div className="bg-white rounded-xl p-6 border border-[#e9e3d6] card-lift flex flex-col">
+          <div className="flex items-start gap-4 mb-4">
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#eef4fc', color: accent }}>
+              <Icon name={item.icon} className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ background: '#eef4fc', color: accent }}>{item.format}</span>
+                <span className="text-[11px] font-semibold" style={{ color: MUTE }}>{item.pages} pages</span>
+                {showGate && <span className="text-[11px] font-semibold ml-auto flex items-center gap-1" style={{ color: MUTE }}><Icon name="mail" className="w-3 h-3" /> Email gate</span>}
+              </div>
+              <h3 className="text-lg font-bold leading-snug" style={{ color: INK }}>{item.title}</h3>
+              <div className="text-sm font-semibold mt-0.5" style={{ color: accent }}>{item.subtitle}</div>
+            </div>
+          </div>
+          <p className="text-sm leading-relaxed mb-5 flex-1" style={{ color: MUTE }}>{item.blurb}</p>
+          <button
+            onClick={() => onDownload(item, showGate)}
+            className="w-full py-3 rounded-lg font-bold text-sm transition flex items-center justify-center gap-2"
+            style={{ background: accent, color: 'white' }}
+            onMouseOver={(e) => e.currentTarget.style.background = ACCENT_DARK}
+            onMouseOut={(e) => e.currentTarget.style.background = accent}
+          >
+            <Icon name={showGate ? 'mail' : 'download'} className="w-4 h-4" />
+            <span>{showGate ? 'Get the PDF' : 'Download free'}</span>
+          </button>
+        </div>
+      );
+    }
+
+    /* ---------------------------------------------- EMAIL GATE MODAL */
+    function GateModal({ item, onClose, accent }) {
+      const [email, setEmail] = useState('');
+      const [submitted, setSubmitted] = useState(false);
+      if (!item) return null;
+      return (
+        <div className="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4" onClick={onClose}>
+          <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {!submitted ? (
+              <>
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style={{ background: '#eef4fc', color: accent }}>
+                  <Icon name={item.icon} className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2" style={{ color: INK }}>{item.title}</h3>
+                <p className="text-sm mb-6" style={{ color: MUTE }}>Enter your email and we&rsquo;ll send the PDF over. No spam, ever.</p>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@yourpractice.com"
+                  className="w-full px-4 py-3 rounded-lg bg-[#faf8f5] border border-[#e9e3d6] focus:outline-none mb-3"
+                  style={{ color: INK }}
+                />
+                <button
+                  onClick={() => { if (email.includes('@')) setSubmitted(true); }}
+                  className="w-full py-3 rounded-lg font-bold text-sm" style={{ background: accent, color: 'white' }}
+                >Send me the PDF</button>
+                <button onClick={onClose} className="w-full mt-2 py-2 text-sm font-semibold" style={{ color: MUTE }}>Cancel</button>
+              </>
+            ) : (
+              <>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ background: '#e8f5e8', color: '#2e7d32' }}>
+                  <Icon name="check" className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2" style={{ color: INK }}>Check your inbox.</h3>
+                <p className="text-sm mb-6" style={{ color: MUTE }}>We just sent {item.title} to <strong>{email}</strong>.</p>
+                <button onClick={onClose} className="w-full py-3 rounded-lg font-bold text-sm" style={{ background: accent, color: 'white' }}>Done</button>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------ CALCULATORS */
+    function fmtMoney(n) {
+      if (!isFinite(n)) return '$0';
+      return '$' + Math.round(n).toLocaleString('en-US');
+    }
+    function fmtNum(n) {
+      if (!isFinite(n)) return '0';
+      return Math.round(n).toLocaleString('en-US');
+    }
+
+    /* Profit First TAP table — Mike Michalowicz published bands */
+    const PF_BANDS = [
+      { max: 250000,    label: '$0 – $250K',      profit: 5,  owner: 50, tax: 15, opex: 30 },
+      { max: 500000,    label: '$250K – $500K',   profit: 10, owner: 35, tax: 15, opex: 40 },
+      { max: 1000000,   label: '$500K – $1M',     profit: 15, owner: 20, tax: 15, opex: 50 },
+      { max: 5000000,   label: '$1M – $5M',       profit: 10, owner: 10, tax: 15, opex: 65 },
+      { max: 10000000,  label: '$5M – $10M',      profit: 15, owner: 5,  tax: 15, opex: 65 },
+      { max: Infinity,  label: '$10M+',           profit: 20, owner: 0,  tax: 15, opex: 65 }
+    ];
+    function pfBand(rev) { return PF_BANDS.find(b => rev <= b.max) || PF_BANDS[PF_BANDS.length - 1]; }
+
+    const PF_BUCKETS = [
+      { id: 'profit', label: 'Profit',      icon: 'piggy-bank',  color: '#1565C0' },
+      { id: 'owner',  label: "Owner's Pay", icon: 'user',        color: '#0D9488' },
+      { id: 'tax',    label: 'Tax',         icon: 'landmark',    color: '#B45309' },
+      { id: 'opex',   label: 'OpEx',        icon: 'briefcase',   color: '#5a6b70' }
+    ];
+
+    function AllocationBar({ profit, owner, tax, opex }) {
+      const segs = [
+        { pct: profit, color: '#1565C0' },
+        { pct: owner,  color: '#0D9488' },
+        { pct: tax,    color: '#B45309' },
+        { pct: opex,   color: '#94a3a8' }
+      ];
+      return (
+        <div className="flex h-2.5 rounded-full overflow-hidden bg-[#f0ece2]">
+          {segs.map((s, i) => <div key={i} style={{ width: s.pct + '%', background: s.color }} />)}
+        </div>
+      );
+    }
+
+    /* ─────────────────  TAP — Target Allocation Percentages  ───────────────── */
+    function TAPCalculator({ accent }) {
+      const [revenue, setRevenue] = useState(450000);
+      const band = pfBand(revenue);
+      const dollars = (pct) => (revenue * pct) / 100;
+      return (
+        <div className="bg-white rounded-xl p-8 border border-[#e9e3d6] card-lift">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#eef4fc', color: accent }}>
+              <Icon name="target" className="w-5 h-5" />
+            </div>
+            <h3 className="text-xl font-bold" style={{ color: INK }}>Target Allocation %</h3>
+          </div>
+          <p className="text-sm mb-6" style={{ color: MUTE }}>Profit First "TAPs" — what each bucket <em>should</em> get based on your revenue band.</p>
+          <div className="space-y-4 mb-6">
+            <NumField label="Annual real revenue" value={revenue} setValue={setRevenue} prefix="$" step={10000} />
+          </div>
+          <div className="border-t border-[#e9e3d6] pt-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: MUTE }}>Your band</div>
+              <div className="text-xs font-bold px-2 py-1 rounded" style={{ background: '#eef4fc', color: accent }}>{band.label}</div>
+            </div>
+            <AllocationBar profit={band.profit} owner={band.owner} tax={band.tax} opex={band.opex} />
+            <div className="grid grid-cols-2 gap-3 mt-5">
+              {PF_BUCKETS.map(b => (
+                <div key={b.id} className="flex items-center gap-3 p-3 rounded-lg" style={{ background: '#faf8f5' }}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: b.color, color: 'white' }}>
+                    <Icon name={b.icon} className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: MUTE }}>{b.label}</div>
+                    <div className="font-bold text-base" style={{ color: INK }}>{band[b.id]}<span className="text-xs">%</span> <span className="text-xs font-semibold" style={{ color: MUTE }}>· {fmtMoney(dollars(band[b.id]))}/yr</span></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ─────────────────  CAPS — Current Allocation Percentages  ───────────────── */
+    function CAPSCalculator({ accent }) {
+      const [revenue, setRevenue] = useState(450000);
+      const [profit, setProfit]   = useState(8000);
+      const [owner, setOwner]     = useState(140000);
+      const [tax, setTax]         = useState(35000);
+      const [opex, setOpex]       = useState(267000);
+
+      const totalAlloc = profit + owner + tax + opex;
+      const pct = (n) => revenue > 0 ? (n / revenue) * 100 : 0;
+      const cur = { profit: pct(profit), owner: pct(owner), tax: pct(tax), opex: pct(opex) };
+      const tap = pfBand(revenue);
+
+      return (
+        <div className="bg-white rounded-xl p-8 border border-[#e9e3d6] card-lift">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#eef4fc', color: accent }}>
+              <Icon name="bar-chart-3" className="w-5 h-5" />
+            </div>
+            <h3 className="text-xl font-bold" style={{ color: INK }}>Current Allocation %</h3>
+          </div>
+          <p className="text-sm mb-6" style={{ color: MUTE }}>What you're <em>actually</em> doing today vs. the Profit First target.</p>
+          <div className="space-y-3 mb-6">
+            <NumField label="Annual real revenue" value={revenue} setValue={setRevenue} prefix="$" step={10000} />
+            <NumField label="Profit (last 12 mo.)" value={profit} setValue={setProfit} prefix="$" step={1000} />
+            <NumField label="Owner's pay (last 12 mo.)" value={owner} setValue={setOwner} prefix="$" step={5000} />
+            <NumField label="Tax set aside (last 12 mo.)" value={tax} setValue={setTax} prefix="$" step={1000} />
+            <NumField label="Operating expenses (last 12 mo.)" value={opex} setValue={setOpex} prefix="$" step={5000} />
+          </div>
+          <div className="border-t border-[#e9e3d6] pt-5">
+            <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: MUTE }}>Current vs. target</div>
+            <div className="space-y-2">
+              {PF_BUCKETS.map(b => {
+                const have = cur[b.id], want = tap[b.id], gap = have - want;
+                const onTrack = Math.abs(gap) < 1.5;
+                return (
+                  <div key={b.id} className="grid grid-cols-[100px_1fr_auto] items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full" style={{ background: b.color }} />
+                      <span className="text-sm font-semibold" style={{ color: INK }}>{b.label}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-[#f0ece2] relative overflow-hidden">
+                      <div className="absolute inset-y-0 left-0" style={{ width: Math.min(100, have) + '%', background: b.color }} />
+                      <div className="absolute inset-y-0 w-0.5 bg-[#1a3a4a]" style={{ left: Math.min(100, want) + '%' }} title={'Target ' + want + '%'} />
+                    </div>
+                    <div className="text-xs font-bold tabular-nums" style={{ color: onTrack ? '#2e7d32' : (gap < 0 ? '#c62828' : '#B45309') }}>
+                      {have.toFixed(1)}% <span style={{ color: MUTE, fontWeight: 500 }}>/ {want}%</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {Math.abs(totalAlloc - revenue) > revenue * 0.02 && (
+              <div className="mt-4 text-xs flex items-start gap-2 p-3 rounded-lg" style={{ background: '#fef3e2', color: '#B45309' }}>
+                <Icon name="alert-triangle" className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>Buckets total {fmtMoney(totalAlloc)}, revenue is {fmtMoney(revenue)}. Reconcile the gap.</span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    /* ─────────────────  Revenue Goal — solve backward  ───────────────── */
+    function RevenueGoalCalculator({ accent }) {
+      const [ownerGoal, setOwnerGoal] = useState(180000);
+      const [annualOpex, setAnnualOpex] = useState(180000);
+      const [profitPct, setProfitPct] = useState(10);
+      const [taxPct, setTaxPct] = useState(15);
+
+      // ownerGoal = (1 - profit% - tax% - ownerPct) ... but ownerPct is what we're solving via revenue.
+      // Profit First model: Revenue × ownerTAP = ownerGoal. We approximate by:
+      //   Revenue = (ownerGoal + annualOpex) / (1 - profit% - tax%)
+      // That treats owner+opex as residual after profit/tax. Closer to how Moxie's calc works.
+      const denom = Math.max(0.01, 1 - (profitPct + taxPct) / 100);
+      const annualRev = (ownerGoal + annualOpex) / denom;
+      const monthlyRev = annualRev / 12;
+      const band = pfBand(annualRev);
+
+      return (
+        <div className="bg-white rounded-xl p-8 border border-[#e9e3d6] card-lift">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#eef4fc', color: accent }}>
+              <Icon name="trending-up" className="w-5 h-5" />
+            </div>
+            <h3 className="text-xl font-bold" style={{ color: INK }}>Revenue Goal</h3>
+          </div>
+          <p className="text-sm mb-6" style={{ color: MUTE }}>Pick the take-home you want. We'll solve for the revenue you need.</p>
+          <div className="space-y-3 mb-6">
+            <NumField label="Annual owner's pay goal" value={ownerGoal} setValue={setOwnerGoal} prefix="$" step={5000} />
+            <NumField label="Annual operating expenses" value={annualOpex} setValue={setAnnualOpex} prefix="$" step={5000} />
+            <div className="grid grid-cols-2 gap-3">
+              <NumField label="Profit %" value={profitPct} setValue={setProfitPct} step={1} />
+              <NumField label="Tax reserve %" value={taxPct} setValue={setTaxPct} step={1} />
+            </div>
+          </div>
+          <div className="border-t border-[#e9e3d6] pt-5 space-y-3">
+            <div className="flex items-end justify-between">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: MUTE }}>Annual revenue needed</div>
+                <div className="text-3xl font-bold" style={{ color: accent }}>{fmtMoney(annualRev)}</div>
+              </div>
+              <div className="text-xs font-bold px-2 py-1 rounded" style={{ background: '#eef4fc', color: accent }}>{band.label}</div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg" style={{ background: '#faf8f5' }}>
+                <div className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: MUTE }}>Monthly revenue</div>
+                <div className="font-bold" style={{ color: INK }}>{fmtMoney(monthlyRev)}</div>
+              </div>
+              <div className="p-3 rounded-lg" style={{ background: '#faf8f5' }}>
+                <div className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: MUTE }}>Members @ $85/mo</div>
+                <div className="font-bold" style={{ color: INK }}>{fmtNum(monthlyRev / 85)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function NumField({ label, value, setValue, prefix, step = 1 }) {
+      return (
+        <label className="block">
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: MUTE }}>{label}</span>
+          <div className="mt-1 flex items-center gap-2 bg-[#faf8f5] border border-[#e9e3d6] rounded-lg px-3 py-2.5">
+            {prefix && <span className="font-semibold" style={{ color: MUTE }}>{prefix}</span>}
+            <input
+              type="number"
+              value={value}
+              step={step}
+              onChange={(e) => setValue(parseFloat(e.target.value) || 0)}
+              className="flex-1 bg-transparent focus:outline-none text-base font-semibold"
+              style={{ color: INK }}
+            />
+          </div>
+        </label>
+      );
+    }
+
+    /* ─────────────────  DPC operating calculators (restored)  ───────────────── */
+    function MembershipPricingCalc({ accent }) {
+      const [target, setTarget] = useState(220000);
+      const [panel, setPanel] = useState(400);
+      const [overhead, setOverhead] = useState(8000);
+      const monthlyRevenueNeeded = (target / 12) + overhead;
+      const perMember = monthlyRevenueNeeded / panel;
+      return (
+        <div className="bg-white rounded-xl p-8 border border-[#e9e3d6] card-lift">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#eef4fc', color: accent }}>
+              <Icon name="dollar-sign" className="w-5 h-5" />
+            </div>
+            <h3 className="text-xl font-bold" style={{ color: INK }}>Membership Pricing</h3>
+          </div>
+          <p className="text-sm mb-6" style={{ color: MUTE }}>What does a member need to pay each month to hit your income goal?</p>
+          <div className="space-y-4 mb-6">
+            <NumField label="Target physician take-home (annual)" value={target} setValue={setTarget} prefix="$" step={5000} />
+            <NumField label="Panel size (members)" value={panel} setValue={setPanel} step={25} />
+            <NumField label="Monthly overhead" value={overhead} setValue={setOverhead} prefix="$" step={500} />
+          </div>
+          <div className="border-t border-[#e9e3d6] pt-5 grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: MUTE }}>Monthly revenue needed</div>
+              <div className="text-2xl font-bold" style={{ color: INK }}>{fmtMoney(monthlyRevenueNeeded)}</div>
+            </div>
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: accent }}>Per-member price</div>
+              <div className="text-2xl font-bold" style={{ color: accent }}>{fmtMoney(perMember)}<span className="text-sm font-semibold" style={{ color: MUTE }}>/mo</span></div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function PanelBreakEvenCalc({ accent }) {
+      const [price, setPrice] = useState(85);
+      const [overhead, setOverhead] = useState(8000);
+      const [target, setTarget] = useState(220000);
+      const breakEven = overhead / price;
+      const goal = (target / 12 + overhead) / price;
+      return (
+        <div className="bg-white rounded-xl p-8 border border-[#e9e3d6] card-lift">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#eef4fc', color: accent }}>
+              <Icon name="users" className="w-5 h-5" />
+            </div>
+            <h3 className="text-xl font-bold" style={{ color: INK }}>Panel Break-Even</h3>
+          </div>
+          <p className="text-sm mb-6" style={{ color: MUTE }}>How many members until you cover overhead, and until you hit your goal?</p>
+          <div className="space-y-4 mb-6">
+            <NumField label="Membership price (per member, monthly)" value={price} setValue={setPrice} prefix="$" step={5} />
+            <NumField label="Monthly overhead" value={overhead} setValue={setOverhead} prefix="$" step={500} />
+            <NumField label="Target physician take-home (annual)" value={target} setValue={setTarget} prefix="$" step={5000} />
+          </div>
+          <div className="border-t border-[#e9e3d6] pt-5 grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: MUTE }}>Members to break even</div>
+              <div className="text-2xl font-bold" style={{ color: INK }}>{fmtNum(breakEven)}</div>
+            </div>
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: accent }}>Members to hit goal</div>
+              <div className="text-2xl font-bold" style={{ color: accent }}>{fmtNum(goal)}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function CashRunwayCalc({ accent }) {
+      const [cash, setCash] = useState(40000);
+      const [revenue, setRevenue] = useState(18000);
+      const [burn, setBurn] = useState(22000);
+      const net = burn - revenue;
+      const months = net <= 0 ? Infinity : cash / net;
+      return (
+        <div className="bg-white rounded-xl p-8 border border-[#e9e3d6] card-lift">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#eef4fc', color: accent }}>
+              <Icon name="activity" className="w-5 h-5" />
+            </div>
+            <h3 className="text-xl font-bold" style={{ color: INK }}>Cash Runway</h3>
+          </div>
+          <p className="text-sm mb-6" style={{ color: MUTE }}>For pre-launch and early-stage practices: how long does the bank account last?</p>
+          <div className="space-y-4 mb-6">
+            <NumField label="Cash on hand" value={cash} setValue={setCash} prefix="$" step={1000} />
+            <NumField label="Monthly membership revenue" value={revenue} setValue={setRevenue} prefix="$" step={500} />
+            <NumField label="Monthly expenses" value={burn} setValue={setBurn} prefix="$" step={500} />
+          </div>
+          <div className="border-t border-[#e9e3d6] pt-5">
+            {net <= 0 ? (
+              <div className="flex items-center gap-3 p-4 rounded-lg" style={{ background: '#e8f5e8' }}>
+                <Icon name="check-circle" className="w-6 h-6" />
+                <div>
+                  <div className="font-bold" style={{ color: '#2e7d32' }}>Cash-flow positive.</div>
+                  <div className="text-sm" style={{ color: MUTE }}>You&rsquo;re profitable on a monthly basis.</div>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: MUTE }}>Net monthly burn</div>
+                  <div className="text-2xl font-bold" style={{ color: INK }}>{fmtMoney(net)}</div>
+                </div>
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: accent }}>Runway</div>
+                  <div className="text-2xl font-bold" style={{ color: accent }}>{fmtNum(months)}<span className="text-sm font-semibold" style={{ color: MUTE }}> months</span></div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    /* --------------------------------------------------- ARTICLES */
+    function ArticleCard({ a, accent }) {
+      return (
+        <a className="bg-white rounded-xl p-6 border border-[#e9e3d6] card-lift block">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ background: '#eef4fc', color: accent }}>
+            <Icon name={a.icon} className="w-5 h-5" />
+          </div>
+          <h3 className="text-lg font-bold leading-snug mb-3" style={{ color: INK }}>{a.title}</h3>
+          <div className="flex items-center gap-3 text-xs font-semibold" style={{ color: MUTE }}>
+            <span>{a.date}</span>
+            <span>&bull;</span>
+            <span>{a.readTime}</span>
+          </div>
+        </a>
+      );
+    }
+
+    /* ----------------------------------------------------- VIDEO */
+    function VideoCard({ v, accent }) {
+      return (
+        <a className="bg-white rounded-xl border border-[#e9e3d6] card-lift overflow-hidden block">
+          <div className="aspect-video relative flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0D2B4E, #1565C0)' }}>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.95)', color: accent }}>
+              <Icon name="play" className="w-7 h-7" />
+            </div>
+            <span className="absolute bottom-2 right-2 text-xs font-bold px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: 'white' }}>{v.length}</span>
+          </div>
+          <div className="p-5">
+            <h3 className="font-bold leading-snug" style={{ color: INK }}>{v.title}</h3>
+          </div>
+        </a>
+      );
+    }
+
+    /* ----------------------------------------------------- PARTNERS */
+    function PartnersGrid({ accent }) {
+      return (
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {PARTNERS.map(p => (
+            <div key={p.name} className="bg-white rounded-xl p-5 border border-[#e9e3d6] card-lift">
+              <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: accent }}>{p.tag}</div>
+              <div className="font-bold mb-1" style={{ color: INK }}>{p.name}</div>
+              <div className="text-sm" style={{ color: MUTE }}>{p.blurb}</div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function EcosystemList({ accent }) {
+      return (
+        <div className="bg-white rounded-xl border border-[#e9e3d6] divide-y divide-[#e9e3d6] overflow-hidden">
+          {ECOSYSTEM.map(e => (
+            <div key={e.name} className="p-5 flex items-center gap-4 hover:bg-[#faf8f5] transition">
+              <div className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded flex-shrink-0" style={{ background: '#eef4fc', color: accent, minWidth: 92, textAlign: 'center' }}>{e.type}</div>
+              <div className="flex-1">
+                <div className="font-bold" style={{ color: INK }}>{e.name}</div>
+                <div className="text-sm" style={{ color: MUTE }}>{e.blurb}</div>
+              </div>
+              <Icon name="external-link" className="w-4 h-4" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    /* --------------------------------------------------------- FAQ */
+    function FAQList({ accent }) {
+      const [open, setOpen] = useState(0);
+      return (
+        <div className="bg-white rounded-xl border border-[#e9e3d6] divide-y divide-[#e9e3d6] overflow-hidden">
+          {FAQS.map((f, i) => {
+            const isOpen = open === i;
+            return (
+              <button key={i} onClick={() => setOpen(isOpen ? -1 : i)} className="w-full text-left p-5 hover:bg-[#faf8f5] transition flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="font-bold" style={{ color: INK }}>{f.q}</span>
+                  <span style={{ color: accent, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                    <Icon name="chevron-down" className="w-5 h-5" />
+                  </span>
+                </div>
+                {isOpen && <p className="text-sm leading-relaxed" style={{ color: MUTE }}>{f.a}</p>}
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    /* --------------------------------------------------------- FOOTER CTA */
+    function CTA({ accent }) {
+      return (
+        <section className="mt-20 w-full text-white py-20 px-6 ekg-pattern" style={{ background: `linear-gradient(90deg, ${NAVY}, ${accent})` }}>
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Have a question these don&rsquo;t cover?</h2>
+            <p className="text-lg opacity-95 mb-8" style={{ maxWidth: '50ch', marginInline: 'auto' }}>Book a 30-minute discovery call. No commitment, no pitch &mdash; just clarity.</p>
+            <a href="https://calendly.com/dannyluna/bookachat" target="_blank" rel="noopener noreferrer" className="inline-block bg-white font-bold px-10 py-4 rounded-lg shadow-lg" style={{ color: accent }}>Book a Free Call</a>
+          </div>
+        </section>
+      );
+    }
+
+    function Footer() {
+      return (
+        <footer className="bg-white border-t border-[#e9e3d6] py-10 px-6">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src="https://i.imgur.com/ilor5RH.png" alt="" className="w-9 h-9 rounded-lg shadow object-cover"
+                   onError={(e) => { e.currentTarget.outerHTML = '<div class="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-xs" style="background:#1565C0">DPC</div>'; }} />
+              <div>
+                <div className="font-bold" style={{ color: INK }}>DPC Bookkeeper</div>
+                <div className="text-xs" style={{ color: MUTE }}>Austin, TX &middot; Serving practices nationwide</div>
+              </div>
+            </div>
+            <div className="flex gap-6 text-sm font-semibold" style={{ color: MUTE }}>
+              <a href="mailto:daniel@dpcbookkeeper.com" className="hover:text-[#1565C0] flex items-center gap-2"><Icon name="mail" className="w-4 h-4" /> daniel@dpcbookkeeper.com</a>
+              <a href="index.html" className="hover:text-[#1565C0]">Home</a>
+            </div>
+          </div>
+        </footer>
+      );
+    }
+
+    /* --------------------------------------------------------- TWEAKS PANEL */
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "accent": "#1565C0",
+      "gating": "none",
+      "density": "comfortable"
+    }/*EDITMODE-END*/;
+
+    function TweaksPanel({ tweaks, setTweak, onClose }) {
+      return (
+        <div className="fixed bottom-6 right-6 z-50 bg-white rounded-xl shadow-2xl border border-[#e9e3d6] w-80">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#e9e3d6]">
+            <div className="font-bold" style={{ color: INK }}>Tweaks</div>
+            <button onClick={onClose} style={{ color: MUTE }}><Icon name="x" className="w-4 h-4" /></button>
+          </div>
+          <div className="p-4 space-y-5 text-sm">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: MUTE }}>Accent color</div>
+              <div className="flex gap-2">
+                {[
+                  { id: '#1565C0', label: 'Blue' },
+                  { id: '#0D9488', label: 'Teal' },
+                  { id: '#7C3AED', label: 'Purple' },
+                  { id: '#B45309', label: 'Amber' }
+                ].map(c => (
+                  <button key={c.id} onClick={() => setTweak('accent', c.id)}
+                    className="flex-1 h-9 rounded-lg border-2"
+                    style={{ background: c.id, borderColor: tweaks.accent === c.id ? INK : 'transparent' }}
+                    title={c.label} />
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: MUTE }}>Email gate</div>
+              <div className="grid grid-cols-3 gap-1 bg-[#faf8f5] border border-[#e9e3d6] rounded-lg p-1">
+                {[ {id:'all', label:'All'}, {id:'mix', label:'Mix'}, {id:'none', label:'None'} ].map(o => (
+                  <button key={o.id} onClick={() => setTweak('gating', o.id)}
+                    className="py-1.5 rounded text-xs font-semibold"
+                    style={{
+                      background: tweaks.gating === o.id ? 'white' : 'transparent',
+                      color: tweaks.gating === o.id ? INK : MUTE,
+                      boxShadow: tweaks.gating === o.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
+                    }}>{o.label}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: MUTE }}>Density</div>
+              <div className="grid grid-cols-2 gap-1 bg-[#faf8f5] border border-[#e9e3d6] rounded-lg p-1">
+                {[ {id:'comfortable', label:'Comfortable'}, {id:'compact', label:'Compact'} ].map(o => (
+                  <button key={o.id} onClick={() => setTweak('density', o.id)}
+                    className="py-1.5 rounded text-xs font-semibold"
+                    style={{
+                      background: tweaks.density === o.id ? 'white' : 'transparent',
+                      color: tweaks.density === o.id ? INK : MUTE,
+                      boxShadow: tweaks.density === o.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
+                    }}>{o.label}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* --------------------------------------------------------- APP */
+    function App() {
+      const [tweaks, setTweaks] = useState(TWEAK_DEFAULTS);
+      const [tweaksOpen, setTweaksOpen] = useState(false);
+      const [active, setActive] = useState('all');
+      const [query, setQuery] = useState('');
+      const [gateItem, setGateItem] = useState(null);
+
+      function setTweak(k, v) {
+        setTweaks(t => {
+          const nt = { ...t, [k]: v };
+          window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+          return nt;
+        });
+      }
+
+      // Tweaks toolbar protocol
+      useEffect(() => {
+        function onMsg(e) {
+          if (e.data?.type === '__activate_edit_mode') setTweaksOpen(true);
+          if (e.data?.type === '__deactivate_edit_mode') setTweaksOpen(false);
+        }
+        window.addEventListener('message', onMsg);
+        window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+        return () => window.removeEventListener('message', onMsg);
+      }, []);
+
+      const accent = tweaks.accent || ACCENT;
+      const compact = tweaks.density === 'compact';
+
+      // search-aware filters
+      const q = query.trim().toLowerCase();
+      const matches = (s) => !q || s.toLowerCase().includes(q);
+
+      const showSection = (id) => active === 'all' || active === id;
+
+      function onDownload(item, gated) {
+        if (gated) setGateItem(item);
+        else setGateItem(item); // also confirm on free path
+      }
+
+      const filteredLM       = LEAD_MAGNETS.filter(x => matches(x.title) || matches(x.blurb) || matches(x.subtitle));
+      const filteredArticles = ARTICLES.filter(x => matches(x.title));
+      const filteredVideos   = VIDEOS.filter(x => matches(x.title));
+      const showAnyLM        = showSection('guides') && filteredLM.length > 0;
+      const showAnyArticles  = showSection('articles') && filteredArticles.length > 0;
+      const showAnyVideos    = showSection('video') && filteredVideos.length > 0;
+      const showAnyCalcs     = showSection('calculators') && (matches('target allocation') || matches('current allocation') || matches('revenue goal') || matches('profit first') || matches('tap') || matches('caps') || matches('membership pricing') || matches('panel break-even') || matches('cash runway') || !q);
+      const showAnyPartners  = showSection('partners');
+      const showAnyEco       = showSection('ecosystem');
+      const showAnyFAQ       = showSection('faq');
+
+      const anyResults = showAnyLM || showAnyArticles || showAnyVideos || showAnyCalcs || showAnyPartners || showAnyEco || showAnyFAQ;
+
+      return (
+        <div className="min-h-full">
+          <Nav />
+          <Hero query={query} setQuery={setQuery} accent={accent} />
+          <Chips active={active} setActive={setActive} accent={accent} />
+
+          {showAnyLM && (
+            <Section eyebrow="Guides & Templates" title="Lead with the playbook." subtitle="Reference materials we use with our own clients." accent={accent}>
+              <div className={`grid sm:grid-cols-2 ${compact ? 'lg:grid-cols-4' : 'lg:grid-cols-2'} gap-${compact ? '4' : '6'}`}>
+                {filteredLM.map(item => (
+                  <LeadMagnetCard key={item.id} item={item} gatingMode={tweaks.gating} onDownload={onDownload} accent={accent} />
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {showAnyCalcs && (
+            <Section eyebrow="Profit First Calculators" title="The Profit First trio, for DPC." subtitle="Built around Mike Michalowicz's Target Allocation Percentages. Know your band, see your gap, and back-solve the revenue you actually need." accent={accent}>
+              <div className="grid lg:grid-cols-3 gap-6">
+                <TAPCalculator accent={accent} />
+                <CAPSCalculator accent={accent} />
+                <RevenueGoalCalculator accent={accent} />
+              </div>
+              <div className="mt-6 p-5 rounded-xl border border-[#e9e3d6] flex items-start gap-3" style={{ background: '#faf8f5' }}>
+                <Icon name="info" className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <p className="text-sm" style={{ color: MUTE }}>TAP percentages reflect Mike Michalowicz's published Profit First bands. They're a starting point, not gospel — your DPC structure may warrant tuning. Book a call and we'll calibrate to your practice.</p>
+              </div>
+
+              <div className="mt-12 mb-6">
+                <div className="text-xs font-bold uppercase tracking-[0.18em] mb-2" style={{ color: accent }}>DPC Operating Calculators</div>
+                <h3 className="text-2xl md:text-3xl font-bold" style={{ color: INK }}>Pricing, panel size, and runway.</h3>
+                <p className="text-base mt-2" style={{ color: MUTE, maxWidth: '60ch' }}>Three quick utilities for the day-to-day decisions: what to charge, how many members you need, and how long your cash lasts.</p>
+              </div>
+              <div className="grid lg:grid-cols-3 gap-6">
+                <MembershipPricingCalc accent={accent} />
+                <PanelBreakEvenCalc accent={accent} />
+                <CashRunwayCalc accent={accent} />
+              </div>
+            </Section>
+          )}
+
+          {showAnyArticles && (
+            <Section eyebrow="Articles" title="From the blog." subtitle="Short pieces on the financial questions DPC owners actually ask." accent={accent}>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {filteredArticles.map(a => <ArticleCard key={a.id} a={a} accent={accent} />)}
+              </div>
+            </Section>
+          )}
+
+          {showAnyVideos && (
+            <Section eyebrow="Video" title="Walkthroughs." subtitle="If you&rsquo;d rather watch than read." accent={accent}>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredVideos.map(v => <VideoCard key={v.id} v={v} accent={accent} />)}
+              </div>
+            </Section>
+          )}
+
+          {showAnyPartners && (
+            <Section eyebrow="Partners" title="Tools we work with daily." subtitle="The platforms our clients use, and the ones we recommend most." accent={accent}>
+              <PartnersGrid accent={accent} />
+            </Section>
+          )}
+
+          {showAnyEco && (
+            <Section eyebrow="DPC Ecosystem" title="The wider DPC world." subtitle="Conferences, podcasts, advocacy groups, and communities worth knowing." accent={accent}>
+              <EcosystemList accent={accent} />
+            </Section>
+          )}
+
+          {showAnyFAQ && (
+            <Section eyebrow="FAQ" title="Common questions." accent={accent}>
+              <FAQList accent={accent} />
+            </Section>
+          )}
+
+          {!anyResults && (
+            <div className="max-w-7xl mx-auto px-6 py-20 text-center">
+              <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4" style={{ background: '#eef4fc', color: accent }}>
+                <Icon name="search-x" className="w-8 h-8" />
+              </div>
+              <div className="text-xl font-bold mb-2" style={{ color: INK }}>No matches.</div>
+              <div className="text-sm" style={{ color: MUTE }}>Try a different search or category.</div>
+            </div>
+          )}
+
+          <CTA accent={accent} />
+          <Footer />
+
+          {gateItem && <GateModal item={gateItem} onClose={() => setGateItem(null)} accent={accent} />}
+          {tweaksOpen && <TweaksPanel tweaks={tweaks} setTweak={setTweak} onClose={() => { setTweaksOpen(false); window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); }} />}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+ </body>
+</html>
