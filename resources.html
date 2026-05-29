@@ -60,6 +60,19 @@
 
     const LEAD_MAGNETS = [
       {
+        id: 'lm-playbook',
+        title: 'The DPC Bookkeeper Pre-Launch Playbook',
+        subtitle: 'The complete pre-launch reference',
+        blurb: 'Everything we use to get a new DPC practice financially ready before day one. Download it free, no email required.',
+        gated: false,
+        direct: true,
+        file: 'DPC%20Bookkeeper%20Pre-Launch%20Playbook.pdf',
+        downloadName: 'DPC Bookkeeper Pre-Launch Playbook.pdf',
+        format: 'PDF',
+        pages: 197,
+        icon: 'book-open'
+      },
+      {
         id: 'lm-coa',
         title: 'The DPC Chart of Accounts',
         subtitle: 'A 14-page reference template',
@@ -270,7 +283,7 @@
 
     /* ------------------------------------------------ LEAD MAGNETS */
     function LeadMagnetCard({ item, gatingMode, onDownload, accent }) {
-      const showGate = gatingMode === 'all' || (gatingMode === 'mix' && item.gated);
+      const showGate = !item.direct && (gatingMode === 'all' || (gatingMode === 'mix' && item.gated));
       return (
         <div className="bg-white rounded-xl p-6 border border-[#e9e3d6] card-lift flex flex-col">
           <div className="flex items-start gap-4 mb-4">
@@ -906,6 +919,15 @@
       const showSection = (id) => active === 'all' || active === id;
 
       function onDownload(item, gated) {
+        if (item.file && !gated) {
+          const a = document.createElement('a');
+          a.href = item.file;
+          a.setAttribute('download', item.downloadName || '');
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          return;
+        }
         if (gated) setGateItem(item);
         else setGateItem(item); // also confirm on free path
       }
